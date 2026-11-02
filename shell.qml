@@ -1,6 +1,15 @@
 import Quickshell
 import qs.modules.background
+import qs.modules.capture
+import qs.modules.clipboard
 import qs.modules.bar
+import qs.modules.bar.menus
+import qs.modules.launcher
+import qs.modules.notifications
+import qs.modules.osd
+import qs.modules.panels
+import qs.modules.session
+import qs.modules.settings
 import qs.modules.stage
 
 // Where it all starts: the world in the back, the stage over the windows, the bar on top.
@@ -10,4 +19,13 @@ ShellRoot {
     PageShortcuts {}
     Illumination {}
     Bar {}
+    BarMenus {}
+    Launcher {}
+    Notifications {}
+    Panels {}
+    Settings {}
+    Session {}
+    Osd {}
+    Clipboard {}
+    Capture {}
 }

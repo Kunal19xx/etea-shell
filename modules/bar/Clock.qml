@@ -1,31 +1,48 @@
 import QtQuick
 import Quickshell
 import qs.config
+import qs.services
 
-// The time up front, the date right next to it.
-Row {
-    spacing: 12
-    anchors.verticalCenter: parent.verticalCenter
+// The time up front, the date right next to it. A click opens the calendar.
+Item {
+    id: root
+
+    implicitWidth: row.implicitWidth
+    implicitHeight: row.implicitHeight
 
     SystemClock {
         id: clock
 
-        precision: SystemClock.Minutes
+        precision: Config.clockSeconds ? SystemClock.Seconds : SystemClock.Minutes
     }
 
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: Qt.formatTime(clock.date, "HH:mm")
-        color: Theme.text
-        font.family: Theme.font
-        font.pixelSize: Theme.textSize + 8
+    Row {
+        id: row
+
+        spacing: 8
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: Qt.formatTime(clock.date, (Config.clockFormat === "12" ? "h:mm" : "HH:mm") + (Config.clockSeconds ? ":ss" : "") + (Config.clockFormat === "12" ? " AP" : ""))
+            font.features: { "tnum": 1 }
+            color: Theme.text
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize + 6
+            font.weight: Font.Medium
+        }
+
+        Text {
+            visible: Config.dateFormat !== "off"
+            anchors.verticalCenter: parent.verticalCenter
+            text: Qt.locale(Config.locale).toString(clock.date, Lang.t(Config.dateFormat === "short" ? "ddd d MMM" : "dddd d MMMM"))
+            color: Theme.textSoft
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize
+            font.letterSpacing: 0.3
+        }
     }
 
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: Qt.locale(Config.locale).toString(clock.date, "dddd d MMMM")
-        color: Theme.textSoft
-        font.family: Theme.font
-        font.pixelSize: Theme.textSize
+    Hover {
+        onPressed: Menus.togglePanel("left")
     }
 }

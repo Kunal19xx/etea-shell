@@ -46,11 +46,50 @@ Scope {
         end
         -- A slow, even curve: the usual ones do most of the change in the first few frames
         hl.curve("eteaFocus", { type = "bezier", points = { { 0.42, 0 }, { 0.58, 1 } } })
+        -- ETEA plays closing windows itself. Apps that quit on their own still fade out quickly.
+        hl.animation({ leaf = "windowsOut", enabled = false })
+        hl.animation({ leaf = "windowsIn", enabled = false })
+
+        -- Always opaque, even unfocused: the text behind would bleed through the labels
+        hl.window_rule({ match = { title = "Réglages ETEA" }, float = true, center = true, size = { 1040, 700 }, opacity = "1.0 override 1.0 override" })
+        -- The side panels unfold through their own star, a layer fade on top would make them see-through
+        hl.layer_rule({ match = { namespace = "^etea:panel-.*" }, no_anim = true })
+
+        -- A new window waits a beat so ETEA can get the sky in front of it: this curve sits
+        -- at zero almost the whole way. It all happens inside Hyprland, so a window can't
+        -- get stuck hidden, even if ETEA crashes.
+        hl.curve("eteaHold", { type = "bezier", points = { { 1, 0 }, { 1, 0 } } })
+        hl.animation({ leaf = "fadeIn", enabled = true, speed = ${Theme.openCover / 100}, bezier = "eteaHold" })
+
+        -- Hyprland tells ETEA a window is coming before it appears, so the screen can be
+        -- frozen in time. Neighbours start moving slowly, just long enough for that photo.
+        hl.curve("eteaSlowStart", { type = "bezier", points = { { 0.7, 0 }, { 0.3, 1 } } })
+        ETEA_MAKE_ROOM = ${Theme.openMakeRoom / 100}
+        if not ETEA_BIRTHS then
+            ETEA_BIRTHS = true
+            hl.on("window.open_early", function()
+                hl.dispatch(hl.dsp.global("etea:windowOpening"))
+                hl.animation({ leaf = "windowsMove", enabled = true, speed = ETEA_MAKE_ROOM, bezier = "eteaSlowStart", style = "slide" })
+                hl.timer(function()
+                    hl.animation({ leaf = "windowsMove", enabled = true, speed = 3, bezier = "${Theme.windowMoveCurve}", style = "slide" })
+                end, { timeout = ETEA_MAKE_ROOM * 100, type = "oneshot" })
+            end)
+        end
         hl.animation({ leaf = "border", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeSwitch", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeDim", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
         hl.animation({ leaf = "fadeShadow", enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" })
     `
+
+    onSettingsChanged: reapply.restart()
+
+    // Sliders and themes change this quickly, Hyprland only needs the final answer
+    Timer {
+        id: reapply
+
+        interval: 120
+        onTriggered: apply.running = true
+    }
 
     Process {
         id: apply
@@ -64,13 +103,22 @@ Scope {
         }
     }
 
-    // A Hyprland reload wipes everything we set, so put it right back
+    // The shortcuts ETEA takes over, from scripts/dev.sh
+    Process {
+        id: shortcuts
+
+        command: ["bash", Quickshell.shellPath("scripts/dev.sh"), "shortcuts"]
+    }
+
+    // A Hyprland reload wipes everything we set, shortcuts included, so put it right back
     Connections {
         target: Hyprland
 
         function onRawEvent(event) {
-            if (event.name === "configreloaded")
+            if (event.name === "configreloaded") {
                 apply.running = true;
+                shortcuts.running = true;
+            }
         }
     }
 

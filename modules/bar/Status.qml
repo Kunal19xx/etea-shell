@@ -5,6 +5,7 @@ import Quickshell.Networking
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
 import qs.config
+import qs.services
 
 // System info. Config.status picks what stays and in which order.
 Row {
@@ -20,12 +21,7 @@ Row {
     readonly property int bluetoothDevices: Bluetooth.devices.values.filter(d => d.connected).length
     readonly property var battery: UPower.displayDevice
 
-    function glyph(code) {
-        return String.fromCodePoint(code);
-    }
-
-    spacing: 18
-    anchors.verticalCenter: parent.verticalCenter
+    spacing: Theme.barSpacing
 
     // Without this, Pipewire won't tell us the volume
     PwObjectTracker {
@@ -42,22 +38,30 @@ Row {
             // Each item boils down to an icon and sometimes a value
             readonly property var info: {
                 switch (modelData) {
+                case "notifications":
+                    return [Notifs.quiet ? "bell-slash" : "bell", Notifs.count ? String(Notifs.count) : ""];
+                case "settings":
+                    return ["gear-six", ""];
+                case "session":
+                    return ["power", ""];
                 case "network":
                     if (root.wifi)
-                        return [root.glyph(root.wifi.signalStrength > 0.66 ? 0xf0928 : root.wifi.signalStrength > 0.33 ? 0xf0925 : 0xf091f), ""];
-                    return [root.glyph(root.wired ? 0xf0200 : 0xf092d), ""];
+                        return [root.wifi.signalStrength > 0.66 ? "wifi-high" : root.wifi.signalStrength > 0.33 ? "wifi-medium" : "wifi-low", ""];
+                    return [root.wired ? "plugs-connected" : "wifi-slash", ""];
                 case "bluetooth":
                     if (!Bluetooth.defaultAdapter?.enabled)
-                        return [root.glyph(0xf00b2), ""];
-                    return [root.glyph(0xf00af), root.bluetoothDevices ? String(root.bluetoothDevices) : ""];
+                        return ["bluetooth-slash", ""];
+                    return [root.bluetoothDevices ? "bluetooth-connected" : "bluetooth", root.bluetoothDevices ? String(root.bluetoothDevices) : ""];
                 case "volume":
                     if (!root.sink?.audio)
                         return ["", ""];
-                    return [root.glyph(root.sink.audio.muted ? 0xf075f : 0xf057e), Math.round(root.sink.audio.volume * 100) + "%"];
+                    return [root.sink.audio.muted ? "speaker-x" : root.sink.audio.volume > 0.5 ? "speaker-high" : "speaker-low", Config.barPercent ? Math.round(root.sink.audio.volume * 100) + "%" : ""];
                 case "battery":
                     if (!root.battery?.isLaptopBattery)
                         return ["", ""];
-                    return [root.glyph(UPower.onBattery ? 0xf0079 : 0xf0084), Math.round(root.battery.percentage * 100) + "%"];
+                    const level = root.battery.percentage;
+                    const icon = !UPower.onBattery ? "battery-charging" : level > 0.8 ? "battery-full" : level > 0.5 ? "battery-high" : level > 0.25 ? "battery-medium" : level > 0.12 ? "battery-low" : "battery-warning";
+                    return [icon, Config.barPercent ? Math.round(level * 100) + "%" : ""];
                 }
                 return ["", ""];
             }
@@ -71,32 +75,48 @@ Row {
             Row {
                 id: content
 
-                spacing: 6
+                spacing: 4
 
-                Text {
+                Icon {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: item.info[0]
-                    color: item.tint
-                    font.family: Theme.iconFont
-                    font.pixelSize: Theme.textSize
+                    name: item.info[0]
+                    size: Theme.iconSize
+                    tint: item.tint
                 }
 
+                // The numbers come second, a touch smaller and softer than the icons
                 Text {
                     visible: text !== ""
                     anchors.verticalCenter: parent.verticalCenter
                     text: item.info[1]
-                    color: item.tint
+                    color: item.modelData === "battery" && item.tint !== Theme.text ? item.tint : Theme.textSoft
                     font.family: Theme.font
-                    font.pixelSize: Theme.textSize
+                    font.pixelSize: Theme.textSize - 1
+                    font.features: { "tnum": 1 }
                 }
             }
 
             // On the volume: click to mute, scroll to adjust
-            MouseArea {
-                anchors.fill: parent
-                enabled: item.modelData === "volume"
-                onClicked: root.sink.audio.muted = !root.sink.audio.muted
-                onWheel: wheel => root.sink.audio.volume = Math.max(0, Math.min(1.5, root.sink.audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05)))
+            Hover {
+                anchors.margins: -4
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onPressed: mouse => {
+                    if (item.modelData === "settings") {
+                        Menus.settingsOpen = !Menus.settingsOpen;
+                    } else if (item.modelData === "session") {
+                        Menus.sessionOpen = !Menus.sessionOpen;
+                    } else if (item.modelData === "notifications") {
+                        if (mouse.button === Qt.RightButton)
+                            Notifs.quiet = !Notifs.quiet;
+                        else
+                            Menus.togglePanel("right");
+                    } else if (item.modelData === "volume" && mouse.button === Qt.RightButton) {
+                        root.sink.audio.muted = !root.sink.audio.muted;
+                    } else {
+                        Menus.toggle({ volume: "sound", network: "network", bluetooth: "bluetooth", battery: "power" }[item.modelData], item.mapToItem(null, item.width / 2, 0).x);
+                    }
+                }
+                onWheel: wheel => item.modelData === "volume" && (root.sink.audio.volume = Math.max(0, Math.min(1.5, root.sink.audio.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))))
             }
         }
     }

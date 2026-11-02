@@ -22,6 +22,12 @@ ETEA SHELL doit aussi réunir une **communauté**. Il n'est donc pas conçu pour
 - **Rythme :** Quotidien par défaut, configurable.
 - **Terrain :** généré, avec hauteur et relief réglables, sans décorations. Les calques pour le parallaxe et les widgets viendront en v1.1.
 - **Ciel :** le dégradé et le grain de la maquette. Un widget affiche des PNG ou SVG dans le ciel, pour que chacun le décore sans limite.
+- **Hublots :** chaque carte est un hublot sur un ciel vivant, dans un trait à la main doublé interrompu par des étoiles. Sa couleur vient du contenu, et les données font partie de l'image : horizon lié à la batterie et au volume, étoile qui longe le temps restant d'une notification, orbites pour le système.
+- **Lanceur :** `Super + Espace`. Le ciel s'assombrit, la question « Où veux-tu aller ? » apparaît et les applis forment une constellation.
+- **Notifications :** comètes qui arrivent du bord de l'écran, se posent et s'ouvrent. Le journal s'ouvre depuis la cloche, un clic droit active Ne pas déranger.
+- **Menus de la barre :** calendrier, média, son, réseau, Bluetooth, énergie et luminosité.
+- **Widgets :** deux styles pour tous. Ciel par défaut : horloge géante, système et média écrits à même le ciel, qui se dissolvent. Cadran céleste en option : cadran, orbites et hublots, visibles sur une page vide. Sur une page vide, la musique dessine des courbes de niveau qui prolongent la crête des montagnes, sans déplacer le terrain, choisis dans `Config.widgets`.
+- **Icônes :** Material Symbols Rounded, version pleine.
 - **Altitude :** l'orbite montre les pages, le système montre les thèmes.
 - **Thèmes :** chaque thème est une planète. Installer un thème, c'est atterrir pour la première fois sur une nouvelle planète.
 
@@ -59,7 +65,7 @@ Ce sont les règles communes à tout le shell.
 
 - **F06 · Palette :** couleurs principales, couleurs d'accent, couleurs d'état (succès, alerte, erreur).
 - **F07 · Variantes de couleurs :** une seule ambiance, un mode clair et sombre, ou des couleurs tirées du fond d'écran ?
-- **F08 · Typographie :** Federo pour tout le texte du shell.
+- **F08 · Typographie :** Poppins pour tout le texte du shell.
 - **F09 · Formes :** géométriques, organiques, angulaires, arrondies, irrégulières ?
 - **F10 · Matières :** verre, papier, métal, encre, lumière pure, autre ?
 - **F11 · Lumière et ombres :** d'où vient la lumière ? Les éléments brillent-ils, projettent-ils une ombre ?

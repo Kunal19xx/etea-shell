@@ -1,5 +1,6 @@
 import QtQuick
 import qs.config
+import qs.services
 
 // All the stand-ins of one page. They turn together around the planet.
 Item {
@@ -11,11 +12,45 @@ Item {
     required property real screenY
     property real angle: 0
     property Item photo: null
+    property real zoom: 1 // how small the page is, seen from above
+    property real lift: 0 // how far up it rides with the ground
+    property bool orbitCard: false // the pages around the planet, as opposed to the ones spinning past
 
-    transform: Rotation {
-        origin.x: root.width / 2
-        origin.y: root.pivotY
-        angle: root.angle * 180 / Math.PI
+    property bool pointedAt: false
+    property real boost: pointedAt ? 1.16 : 1
+
+    Behavior on boost {
+        NumberAnimation { duration: 260; easing.type: Easing.BezierSpline; easing.bezierCurve: Theme.expressive }
+    }
+
+    transform: [
+        Scale {
+            origin.x: root.width / 2
+            origin.y: root.height
+            xScale: root.zoom * root.boost
+            yScale: root.zoom * root.boost
+        },
+        Translate {
+            y: root.lift
+        },
+        Rotation {
+            origin.x: root.width / 2
+            origin.y: root.pivotY
+            angle: root.angle * 180 / Math.PI
+        }
+    ]
+
+    // An empty page still needs to be there, so you can see where to land
+    Rectangle {
+        visible: root.orbitCard && root.windows.length === 0
+        anchors.fill: parent
+        anchors.margins: Theme.windowGapOuter
+        anchors.topMargin: (Theme.barOnTop ? Theme.barReserve : 0) + Theme.windowGapOuter
+        anchors.bottomMargin: (Theme.barOnTop ? 0 : Theme.barReserve) + Theme.windowGapOuter
+        radius: Theme.windowRadius
+        color: Qt.alpha(Theme.windowLit, 0.04)
+        border.width: 6
+        border.color: Qt.alpha(Theme.windowLit, 0.28)
     }
 
     Repeater {

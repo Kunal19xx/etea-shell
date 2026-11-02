@@ -3,6 +3,7 @@
 #   scripts/dev.sh start   stops end4 and runs ETEA, with live reload
 #   scripts/dev.sh stop    stops ETEA and brings end4 back
 #   scripts/dev.sh logs    follows what ETEA has to say
+#   scripts/dev.sh shortcuts  takes the page shortcuts back after a Hyprland reload
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -51,10 +52,10 @@ stop_etea() {
 take_pages() {
     /usr/bin/hyprctl eval '
         hl.animation({ leaf = "workspaces", enabled = false })
-        local keys = { 10, 11, 12, 13, 14, 15 }
-        local pad = { 87, 88, 89, 83, 84, 85 }
-        for i = 1, 6 do
-            hl.unbind("SUPER + " .. i)
+        local keys = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 }
+        local pad = { 87, 88, 89, 83, 84, 85, 79, 80, 81, 90 }
+        for i = 1, 10 do
+            hl.unbind("SUPER + " .. (i % 10))
             hl.unbind("SUPER + code:" .. keys[i])
             hl.unbind("SUPER + code:" .. pad[i])
             hl.bind("SUPER + code:" .. keys[i], hl.dsp.global("etea:page" .. i))
@@ -64,11 +65,36 @@ take_pages() {
         hl.unbind("CTRL + SUPER + Left")
         hl.bind("CTRL + SUPER + Right", hl.dsp.global("etea:pageNext"))
         hl.bind("CTRL + SUPER + Left", hl.dsp.global("etea:pagePrevious"))
+        -- The Super key alone opens the launcher. It fires on release, and only if
+        -- no other key came in between, so Super + anything still works normally.
+        hl.unbind("SUPER + Space")
+        hl.unbind("SUPER + SUPER_L")
+        hl.unbind("SUPER + SUPER_R")
+        hl.bind("SUPER + SUPER_L", hl.dsp.global("etea:launcher"), { release = true })
+        hl.bind("SUPER + SUPER_R", hl.dsp.global("etea:launcher"), { release = true })
+        hl.unbind("SUPER + A")
+        hl.bind("SUPER + A", hl.dsp.global("etea:panelLeft"))
+        hl.unbind("SUPER + N")
+        hl.bind("SUPER + N", hl.dsp.global("etea:panelRight"))
+        hl.unbind("SUPER + V")
+        hl.bind("SUPER + V", hl.dsp.global("etea:clipboard"))
+        hl.unbind("SUPER + SHIFT + S")
+        hl.bind("SUPER + SHIFT + S", hl.dsp.global("etea:capture"))
+        hl.unbind("SUPER + Escape")
+        hl.bind("SUPER + Escape", hl.dsp.global("etea:session"))
+        hl.unbind("SUPER + Comma")
+        hl.bind("SUPER + Comma", hl.dsp.global("etea:settings"))
+        hl.unbind("SUPER + SHIFT + Tab")
+        hl.bind("SUPER + SHIFT + Tab", hl.dsp.global("etea:orbitDown"))
+        hl.unbind("SUPER + Tab")
+        hl.bind("SUPER + Tab", hl.dsp.global("etea:orbit"))
+        hl.unbind("SUPER + Q")
+        hl.bind("SUPER + Q", hl.dsp.global("etea:closeWindow"))
     ' | grep -v '^ok$' || true
 
     # The four finger swipe would switch pages without us, so it goes through ETEA too.
     # Hyprland complains when removing a gesture that isn't there, which is fine here.
-    for direction in horizontal left right; do
+    for direction in horizontal left right up down; do
         /usr/bin/hyprctl eval "hl.gesture({ fingers = 4, direction = \"$direction\", action = \"unset\" })" >/dev/null 2>&1 || true
     done
     /usr/bin/hyprctl eval '
@@ -77,6 +103,12 @@ take_pages() {
         end })
         hl.gesture({ fingers = 4, direction = "right", action = function()
             hl.dispatch(hl.dsp.global("etea:pagePrevious"))
+        end })
+        hl.gesture({ fingers = 4, direction = "up", action = function()
+            hl.dispatch(hl.dsp.global("etea:orbit"))
+        end })
+        hl.gesture({ fingers = 4, direction = "down", action = function()
+            hl.dispatch(hl.dsp.global("etea:orbitDown"))
         end })
     ' | grep -v '^ok$' || true
 }
@@ -91,6 +123,8 @@ start)
     fi
     qs kill -c "$SHELL_NAME" 2>/dev/null || true
     stop_etea
+    # ETEA shows notifications itself now, and only one program can
+    pkill -x mako 2>/dev/null || true
     qs -p "$ROOT" -d
     take_pages
     ;;
@@ -102,6 +136,10 @@ stop)
     fi
     /usr/bin/hyprctl reload config-only >/dev/null
     qs -c "$SHELL_NAME" -d
+    ;;
+shortcuts)
+    # The shell calls this itself after a Hyprland reload, which wipes them
+    take_pages
     ;;
 logs)
     qs log -p "$ROOT" -f
