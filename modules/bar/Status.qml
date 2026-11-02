@@ -20,12 +20,69 @@ Row {
     readonly property bool wired: Networking.devices.values.some(d => d.connected && d.networks === undefined)
     readonly property int bluetoothDevices: Bluetooth.devices.values.filter(d => d.connected).length
     readonly property var battery: UPower.displayDevice
+    // Apps listening to the microphone. Captures of what the speakers play don't count,
+    // like the visualiser's or a recording with the computer's sound.
+    readonly property var listening: Pipewire.nodes.values.filter(node => node.isStream && !node.isSink && node.audio && node.properties["stream.capture.sink"] !== "true")
 
     spacing: Theme.barSpacing
 
     // Without this, Pipewire won't tell us the volume
     PwObjectTracker {
         objects: root.sink ? [root.sink] : []
+    }
+
+    // Someone is listening: the microphone lights up in the bar
+    Icon {
+        visible: root.listening.length > 0
+        anchors.verticalCenter: parent.verticalCenter
+        name: "microphone"
+        size: Theme.iconSize
+        tint: "#f59a7a"
+    }
+
+    // Filming: a beating red dot and the time so far, a click stops it
+    Item {
+        visible: Recorder.recording
+        anchors.verticalCenter: parent.verticalCenter
+        implicitWidth: rolling.implicitWidth
+        implicitHeight: rolling.implicitHeight
+
+        Row {
+            id: rolling
+
+            spacing: 6
+
+            Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 8
+                height: 8
+                radius: 4
+                color: "#f0705f"
+
+                SequentialAnimation on opacity {
+                    running: Recorder.recording
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 0.3; duration: 700; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 1; duration: 700; easing.type: Easing.InOutSine }
+                }
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: Recorder.elapsed(Recorder.seconds)
+                color: "#f0947c"
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize
+                font.features: { "tnum": 1 }
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            anchors.margins: -6
+            cursorShape: Qt.PointingHandCursor
+            onPressed: Recorder.stop()
+        }
     }
 
     Repeater {

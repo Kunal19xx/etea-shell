@@ -86,6 +86,8 @@ take_pages() {
         hl.bind("SUPER + Escape", hl.dsp.global("etea:session"))
         hl.unbind("SUPER + Comma")
         hl.bind("SUPER + Comma", hl.dsp.global("etea:settings"))
+        hl.unbind("SUPER + Slash")
+        hl.bind("SUPER + Slash", hl.dsp.global("etea:cheatsheet"))
         hl.unbind("SUPER + SHIFT + Tab")
         hl.bind("SUPER + SHIFT + Tab", hl.dsp.global("etea:orbitDown"))
         hl.unbind("SUPER + Tab")
@@ -122,10 +124,12 @@ take_pages() {
 
 case "${1:-}" in
 start)
-    # Hypridle sees qs running and assumes the shell handles locking, so point it at hyprlock
+    # Idle and sleep lock through ETEA, which picks its own screen or hyprlock from Settings
     if [[ ! -f "$BACKUP" ]]; then
         cp "$IDLE" "$BACKUP"
-        sed -i -e 's|^\$lock_cmd = hyprctl dispatch|# &|' -e 's|^# \$lock_cmd = pidof hyprlock|$lock_cmd = pidof hyprlock|' "$IDLE"
+    fi
+    if ! grep -q "scripts/lock.sh" "$IDLE"; then
+        sed -i -e 's|^\$lock_cmd = .*|$lock_cmd = '"'$ROOT/scripts/lock.sh'"'|' "$IDLE"
         restart_idle
     fi
     qs kill -c "$SHELL_NAME" 2>/dev/null || true
