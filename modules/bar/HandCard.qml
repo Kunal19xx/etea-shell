@@ -1,5 +1,6 @@
 import QtQuick
 import qs.config
+import qs.services
 
 // Every card in ETEA: a porthole onto a living sky, framed by a wobbly double ink line
 // that breaks around its stars. The seed makes each one a little different, the tint
@@ -12,7 +13,8 @@ Item {
     property real ink: 0.72 // how strong the line is
     property color tint: Theme.windowLit
     property real rise: 0.16 // how high the horizon sits inside the card
-    property bool alive: visible // the sky stops moving when nobody can see it
+    // The sky stops moving when nobody can see it, closed menus and panels included
+    property bool alive: visible && (Window.window?.visible ?? false)
     property real starSpacing: 130 // one star every so often along the sides, 0 keeps only the corners
     property real starScale: 1
 
@@ -109,6 +111,13 @@ Item {
         property vector2d pointer: Qt.vector2d(handler.point.position.x, handler.point.position.y)
         property real time: 0
         property real seed: root.phase
+
+        // Hidden, the sky holds still
+        Binding on time {
+            when: root.alive
+            value: Drift.time
+            restoreMode: Binding.RestoreNone
+        }
         property real hover: root.hovered ? 1 : 0
         property real rise: root.rise
         property real radius: root.radius
@@ -127,13 +136,23 @@ Item {
         Behavior on tint {
             ColorAnimation { duration: 600 }
         }
+    }
 
-        Timer {
-            running: root.alive
-            repeat: true
-            interval: 33
-            onTriggered: sky.time += 0.033
-        }
+    // Counted once on the shared clock while alive, however often alive flips
+    property bool ticking: false
+
+    function tick() {
+        if (alive === ticking)
+            return;
+        ticking = alive;
+        alive ? Drift.join() : Drift.leave();
+    }
+
+    onAliveChanged: tick()
+    Component.onCompleted: tick()
+    Component.onDestruction: {
+        if (ticking)
+            Drift.leave();
     }
 
     Canvas {
