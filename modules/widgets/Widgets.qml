@@ -20,7 +20,8 @@ Item {
         weather: "SkyWeather.qml",
         calendar: "SkyCalendar.qml",
         tasks: "SkyTasks.qml",
-        photo: "SkyPhoto.qml"
+        photo: "SkyPhoto.qml",
+        lyrics: "SkyLyrics.qml"
     } : {
         clock: "ClockWidget.qml",
         system: "SystemWidget.qml",
@@ -28,7 +29,8 @@ Item {
         weather: "WeatherWidget.qml",
         calendar: "CalendarWidget.qml",
         tasks: "TasksWidget.qml",
-        photo: "PhotoWidget.qml"
+        photo: "PhotoWidget.qml",
+        lyrics: "LyricsWidget.qml"
     }
 
     function origin(ax, ay) {
@@ -151,7 +153,7 @@ Item {
                         Desk.openMenu(slot.type, at, QsWindow.window?.screen ?? null);
                         return;
                     }
-                    if (!(mouse.modifiers & Qt.MetaModifier)) {
+                    if (!(mouse.modifiers & Qt.MetaModifier) && !Desk.grabbing) {
                         mouse.accepted = false;
                         return;
                     }

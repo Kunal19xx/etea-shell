@@ -19,7 +19,8 @@ Singleton {
         { type: "weather", label: Lang.t("Météo"), icon: "cloud-sun" },
         { type: "calendar", label: Lang.t("Calendrier et lune"), icon: "calendar" },
         { type: "tasks", label: Lang.t("Tâches"), icon: "checklist" },
-        { type: "photo", label: Lang.t("Cadre photo"), icon: "image" }
+        { type: "photo", label: Lang.t("Cadre photo"), icon: "image" },
+        { type: "lyrics", label: Lang.t("Paroles"), icon: "lyrics" }
     ]
 
     // Where each one stands until you move it, and which of its points stands there:
@@ -32,7 +33,8 @@ Singleton {
         weather: { x: 0.956, y: 0.33, ax: 1, ay: 0 },
         calendar: { x: 0.044, y: 0.36, ax: 0, ay: 0 },
         tasks: { x: 0.956, y: 0.58, ax: 1, ay: 0 },
-        photo: { x: 0.3, y: 0.62, ax: 0.5, ay: 0.5 }
+        photo: { x: 0.3, y: 0.62, ax: 0.5, ay: 0.5 },
+        lyrics: { x: 0.5, y: 0.15, ax: 0.5, ay: 0.5 }
     } : {
         clock: { x: 0.5, y: 0.34, ax: 0.5, ay: 0.5 },
         system: { x: 0.14, y: 0.3, ax: 0.5, ay: 0.5 },
@@ -40,7 +42,8 @@ Singleton {
         weather: { x: 0.84, y: 0.6, ax: 0.5, ay: 0.5 },
         calendar: { x: 0.68, y: 0.68, ax: 0.5, ay: 0.5 },
         tasks: { x: 0.14, y: 0.62, ax: 0.5, ay: 0.5 },
-        photo: { x: 0.32, y: 0.64, ax: 0.5, ay: 0.5 }
+        photo: { x: 0.32, y: 0.64, ax: 0.5, ay: 0.5 },
+        lyrics: { x: 0.5, y: 0.15, ax: 0.5, ay: 0.5 }
     }
 
     // Only changes when a widget comes or goes, so moving one doesn't rebuild the others
@@ -48,18 +51,20 @@ Singleton {
 
     property string hovered: "" // the widget under the pointer, for Super + wheel
     property bool carrying: false // a widget is being dragged right now
+    property bool grabbing: false // Super + left button is down over a widget, Hyprland says
     property real lastGesture: 0 // when a Super gesture last landed on a widget
 
     // Hyprland's Super + drag moves windows, and swallows the click even over the empty
-    // desktop. So while the pointer rests on a widget, that one bind steps aside, and
-    // comes back as soon as it leaves. Only if there is such a bind to begin with.
-    // Hyprland itself remembers that it was lifted, so a reload or a crash of the shell
-    // can't leave it missing: the next start puts it back first.
+    // desktop. So while the pointer rests on a widget, that bind steps aside for one of
+    // ours that lets the click through and tells us Super is down: the desktop never has
+    // the keyboard, so the click itself arrives without it. It comes back as soon as the
+    // pointer leaves, and only if there was such a bind to begin with. Hyprland remembers
+    // it was swapped, so a reload or a crash of the shell can't leave it missing.
     property bool windowDrag: false
     property bool lifted: false
     readonly property bool liftWanted: windowDrag && (hovered !== "" || carrying)
 
-    readonly property string putBack: 'if ETEA_LIFTED then hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: Move" }) end ETEA_LIFTED = false'
+    readonly property string putBack: 'if ETEA_LIFTED then hl.unbind("SUPER + mouse:272") hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: Move" }) end ETEA_LIFTED = false'
 
     onLiftWantedChanged: lift()
 
@@ -67,7 +72,7 @@ Singleton {
         if (swap.running || lifted === liftWanted)
             return;
         lifted = liftWanted;
-        swap.command = ["/usr/bin/hyprctl", "eval", lifted ? 'hl.unbind("SUPER + mouse:272") ETEA_LIFTED = true' : root.putBack];
+        swap.command = ["/usr/bin/hyprctl", "eval", lifted ? 'hl.unbind("SUPER + mouse:272") hl.bind("SUPER + mouse:272", hl.dsp.global("etea:deskGrab"), { non_consuming = true }) ETEA_LIFTED = true' : root.putBack];
         swap.running = true;
     }
 
@@ -144,6 +149,13 @@ Singleton {
         function onWidgetsChanged() {
             root.refresh();
         }
+    }
+
+    GlobalShortcut {
+        appid: "etea"
+        name: "deskGrab"
+        onPressed: root.grabbing = true
+        onReleased: root.grabbing = false
     }
 
     // The pointer can come and go faster than hyprctl answers, so catch up once it's done
