@@ -110,6 +110,7 @@ Scope {
 
     onSettingsChanged: reapply.restart()
 
+
     // Sliders and themes change this quickly, Hyprland only needs the final answer
     Timer {
         id: reapply
