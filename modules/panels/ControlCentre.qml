@@ -37,6 +37,13 @@ ColumnLayout {
 
     Component.onCompleted: Brightness.refresh()
 
+    // Above everything in the panel, so it lives outside this column
+    TileMenu {
+        id: tileMenu
+
+        parent: root.parent
+    }
+
     // The charge, then the way to the settings and out of the session
     RowLayout {
         Layout.fillWidth: true
@@ -106,22 +113,30 @@ ColumnLayout {
         columnSpacing: 10
 
         QuickTile {
+            id: wifiTile
+
             icon: Networking.wifiEnabled ? "wifi-high" : "wifi-slash"
             label: "Wi-Fi"
             detail: root.network?.name ?? (Networking.wifiEnabled ? Lang.t("Recherche") : Lang.t("Coupé"))
             on: Networking.wifiEnabled
             tint: "#8fc7e8"
+            menu: "network"
             onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
+            onMenuRequested: tileMenu.show(menu, wifiTile)
         }
 
         QuickTile {
+            id: bluetoothTile
+
             icon: root.adapter?.enabled ? "bluetooth" : "bluetooth-slash"
             label: "Bluetooth"
             detail: root.paired?.name ?? (root.adapter?.enabled ? Lang.t("Allumé") : Lang.t("Coupé"))
             on: root.adapter?.enabled ?? false
             available: root.adapter !== null
             tint: "#b9a2f0"
+            menu: "bluetooth"
             onToggled: root.adapter.enabled = !root.adapter.enabled
+            onMenuRequested: tileMenu.show(menu, bluetoothTile)
         }
 
         QuickTile {
