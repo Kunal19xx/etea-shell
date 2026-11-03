@@ -4,7 +4,7 @@
 [Quickshell](https://quickshell.outfoxxed.me), for people who'd rather live on a planet than in a
 grid of rectangles.
 
-![The desktop on Vesper: a sky clock, karaoke lyrics, weather, music, calendar and the machine as a constellation](doc/Screenshots/homescreen2.png)
+![The desktop on Vesper: a sky clock, karaoke lyrics, weather, music, calendar, the machine as a constellation and the music rising from the ground](doc/Screenshots/Desktop1.png)
 
 Your workspaces are pages standing around a small planet, and switching pages turns it. New
 windows are born from a star, closing ones fold back into one. Press `Super + Tab` and you rise
@@ -45,14 +45,16 @@ It started as "I want my desktop to feel like my drawings" and kind of got out o
 
 | | |
 |---|---|
-| ![The same desktop on Néré, the ocean world](doc/Screenshots/homescreen1.png) | ![The control centre, with quick tiles, sliders, music and notifications grouped by app](doc/Screenshots/homescreen3.png) |
-| Néré, the ocean world | The control centre |
-| ![Settings, where you choose your world or make one from a picture](doc/Screenshots/settings.png) | ![The session menu: lock, sleep, log out, restart, shut down](doc/Screenshots/Quit%20page.png) |
+| ![The same desktop on Néré, the ocean world](doc/Screenshots/Desktop2.png) | ![And on Aster, the evening that never ends](doc/Screenshots/Desktop3.png) |
+| Néré, the ocean world | Aster, the evening that never ends |
+| ![Orbit: every page standing around the planet](doc/Screenshots/Orbit.png) | ![The launcher: apps as constellations, your favourites brightest](doc/Screenshots/Launcher.png) |
+| Orbit, every page at once | The launcher |
+| ![Settings, where you choose your world or make one from a picture](doc/Screenshots/settings.png) | ![The session menu: lock, sleep, log out, restart, shut down](doc/Screenshots/quitpage.png) |
 | Settings: choose your world | The session menu |
-| ![The lock screen: a woman reaching for the stars](doc/Screenshots/login.png) | ![Every shortcut, ETEA's and your own](doc/Screenshots/shortcut%20page.png) |
-| The lock screen | The shortcut cheatsheet |
+| ![The lock screen as your world: the time, the song and the fingerprint reader](doc/Screenshots/Loginscreen1.png) | ![The lock screen as a story: a woman reaching for the stars](doc/Screenshots/Loginscreen2.png) |
+| The lock screen, as your world | …or as a story |
 
-![A terminal on the purple world, with the bar and the window frame](doc/Screenshots/terminal.png)
+![Every shortcut on Super + /, ETEA's and your own](doc/Screenshots/shortcuts.png)
 
 ## How heavy is it?
 
