@@ -167,7 +167,8 @@ them back a second later.
 | `Super` | The launcher |
 | `Super + 1 … 0` | Go to a page |
 | `Super + wheel`, `Ctrl + Super + ← →`, 4-finger swipe | Turn the planet |
-| `Super + Tab` | Orbit, then the planets |
+| `Super + Tab` | Orbit |
+| `Super + Tab` × 2 | The theme orbit, to pick your world |
 | `Super + A` / `Super + N` | Left panel (calendar, tasks, focus timer) / control centre |
 | `Super + V` | Clipboard |
 | `Super + Shift + S` | Capture (Tab switches to video) |

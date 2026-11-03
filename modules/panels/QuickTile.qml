@@ -4,6 +4,7 @@ import qs.config
 import qs.modules.bar
 
 // A quick setting. When it's on, its star lights up and the tile fills with colour.
+// A right click opens its menu, when it has one, for the choices behind the switch.
 Item {
     id: root
 
@@ -13,8 +14,10 @@ Item {
     property bool on: false
     property bool available: true
     property color tint: Theme.windowLit
+    property string menu: "" // like "network", see TileMenu
 
     signal toggled()
+    signal menuRequested()
 
     Layout.fillWidth: true
     implicitHeight: 84
@@ -103,10 +106,14 @@ Item {
         anchors.fill: parent
         enabled: root.available
         hoverEnabled: true
+        acceptedButtons: root.menu ? Qt.LeftButton | Qt.RightButton : Qt.LeftButton
         cursorShape: Qt.PointingHandCursor
         onPressed: mouse => {
             ripple.burst(mouse.x, mouse.y);
-            root.toggled();
+            if (mouse.button === Qt.RightButton)
+                root.menuRequested();
+            else
+                root.toggled();
         }
     }
 }

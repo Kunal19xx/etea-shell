@@ -48,10 +48,14 @@ Scope {
             item: card
         }
 
+        // A capture takes the keyboard for a moment, the panel stays open so it's in the picture
         HyprlandFocusGrab {
             windows: [window]
-            active: root.open
-            onCleared: root.closeRequested()
+            active: root.open && !Menus.captureOpen
+            onCleared: {
+                if (!Menus.captureOpen)
+                    root.closeRequested();
+            }
         }
 
         NumberAnimation {
