@@ -104,6 +104,8 @@ Scope {
         hl.window_rule({ match = { title = "Réglages ETEA" }, float = true, center = true, size = { 1040, 700 }, opacity = "1.0 override 1.0 override" })
         -- The side panels unfold through their own star, a layer fade on top would make them see-through
         hl.layer_rule({ match = { namespace = "^etea:panel-.*" }, no_anim = true })
+        -- The capture overlay has to be gone at once, or it ends up in the picture
+        hl.layer_rule({ match = { namespace = "^etea:capture$" }, no_anim = true })
 
         -- A new window waits a beat so ETEA can get the sky in front of it: this curve sits
         -- at zero almost the whole way. It all happens inside Hyprland, so a window can't
