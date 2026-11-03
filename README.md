@@ -180,9 +180,38 @@ Right click the empty sky to add widgets. Everything else lives in Settings.
 ## Updating
 
 **Settings › About** checks GitHub for anything new and updates in one press; the shell reloads
-by itself afterwards. That works for a `git clone` install. If you changed files by hand, the
-update waits rather than overwrite them. From a terminal: `git pull` in the shell's folder does
-the same.
+by itself afterwards. That works for a `git clone` install, the installer's included.
+
+**Installed before the About page existed?** Pull once by hand, and the button takes over from
+there:
+
+```sh
+cd ~/.config/etea-shell   # or wherever you cloned it
+git pull
+```
+
+If `git pull` stops because you changed some files yourself, put them aside first:
+
+```sh
+git stash        # set your changes aside
+git pull
+git stash pop    # bring them back (optional)
+```
+
+**Downloaded as a zip, without git?** Reinstall once with a clone. Your settings live in
+`~/.config/etea`, not in the shell's folder, so they stay; the installer points the autostart at
+the new folder:
+
+```sh
+git clone https://github.com/SDcold/etea-shell.git ~/.config/etea-shell
+~/.config/etea-shell/install.sh
+```
+
+**Didn't reload by itself?** Restart it, or log out and back in:
+
+```sh
+qs kill -p ~/.config/etea-shell; qs -p ~/.config/etea-shell
+```
 
 ## Configuration
 
