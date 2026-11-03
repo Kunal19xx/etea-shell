@@ -177,6 +177,13 @@ them back a second later.
 
 Right click the empty sky to add widgets. Everything else lives in Settings.
 
+## Updating
+
+**Settings › About** checks GitHub for anything new and updates in one press; the shell reloads
+by itself afterwards. That works for a `git clone` install. If you changed files by hand, the
+update waits rather than overwrite them. From a terminal: `git pull` in the shell's folder does
+the same.
+
 ## Configuration
 
 Settings write to `~/.config/etea/settings.json`, and editing that file by hand works too: the

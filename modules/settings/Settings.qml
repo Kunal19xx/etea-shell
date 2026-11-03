@@ -22,7 +22,8 @@ Scope {
             { label: Lang.t("Mouvement"), page: "MotionPage.qml" },
             { label: Lang.t("Système"), page: "SystemPage.qml" },
             { label: Lang.t("Verrouillage"), page: "LockPage.qml" },
-            { label: Lang.t("Langue"), page: "LanguagePage.qml" }
+            { label: Lang.t("Langue"), page: "LanguagePage.qml" },
+            { label: Lang.t("À propos"), page: "AboutPage.qml" }
         ]
 
         title: "Réglages ETEA"
