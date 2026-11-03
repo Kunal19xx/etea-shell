@@ -108,6 +108,21 @@ sudo dnf install quickshell cava cliphist wl-clipboard grim slurp wf-recorder hy
 
 ## Installation
 
+### The guided way
+
+```sh
+git clone https://github.com/SDcold/etea-shell.git ~/.config/etea-shell
+~/.config/etea-shell/install.sh
+```
+
+The installer walks you through it and asks before every change: it checks your Hyprland,
+installs what's missing (Arch and Fedora), points out other bars or notification daemons that
+would get in the way, adds ETEA to your `hyprland.lua` (backing it up first), can set up locking
+on idle and enrol a finger, then lifts off. Not sure? `install.sh --dry-run` shows everything it
+would do without touching anything, and `install.sh --uninstall` takes ETEA back out.
+
+### By hand
+
 1. **Get it**, anywhere you like:
 
    ```sh
