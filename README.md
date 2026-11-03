@@ -212,3 +212,5 @@ ETEA Shell is free software under the [GNU General Public License v3.0](LICENSE)
 it, change it and share it, as long as what you share stays under the same terms. That covers
 the code and the artwork made for it, the lock screen drawing included. Poppins and Material
 Symbols keep their own licenses (`assets/fonts/OFL.txt` and `assets/icons/LICENSE.txt`).
+
+Just give me some credits if my work helps you ;)
