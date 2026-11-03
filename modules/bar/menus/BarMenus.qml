@@ -43,10 +43,14 @@ Scope {
             item: card
         }
 
+        // Same as the side panels: still there when a capture is taken
         HyprlandFocusGrab {
             windows: [panel]
-            active: Menus.open !== ""
-            onCleared: Menus.close()
+            active: Menus.open !== "" && !Menus.captureOpen
+            onCleared: {
+                if (!Menus.captureOpen)
+                    Menus.close();
+            }
         }
 
         property real reveal: 0
