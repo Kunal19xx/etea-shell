@@ -4,6 +4,8 @@
 [Quickshell](https://quickshell.outfoxxed.me), for people who'd rather live on a planet than in a
 grid of rectangles.
 
+![The desktop on Vesper: a sky clock, karaoke lyrics, weather, music, calendar and the machine as a constellation](doc/Screenshots/homescreen2.png)
+
 Your workspaces are pages standing around a small planet, and switching pages turns it. New
 windows are born from a star, closing ones fold back into one. Press `Super + Tab` and you rise
 into orbit to see every page at once; press it again and you're among the planets, each one a
@@ -41,6 +43,25 @@ It started as "I want my desktop to feel like my drawings" and kind of got out o
 - **Shortcut cheatsheet** on `Super + /`, built from your own Hyprland binds.
 - **French and English**, and adding a language is one JSON file.
 
+| | |
+|---|---|
+| ![The same desktop on Néré, the ocean world](doc/Screenshots/homescreen1.png) | ![The control centre, with quick tiles, sliders, music and notifications grouped by app](doc/Screenshots/homescreen3.png) |
+| Néré, the ocean world | The control centre |
+| ![Settings, where you choose your world or make one from a picture](doc/Screenshots/settings.png) | ![The session menu: lock, sleep, log out, restart, shut down](doc/Screenshots/Quit%20page.png) |
+| Settings: choose your world | The session menu |
+| ![The lock screen: a woman reaching for the stars](doc/Screenshots/login.png) | ![Every shortcut, ETEA's and your own](doc/Screenshots/shortcut%20page.png) |
+| The lock screen | The shortcut cheatsheet |
+
+![A terminal on the purple world, with the bar and the window frame](doc/Screenshots/terminal.png)
+
+## How heavy is it?
+
+It's built to stay out of the way when you're not looking at it: the sky and the widgets stop
+moving behind your windows, and the big animations only exist while they play. On my laptop
+(Intel Core i5-1335U, Intel Iris Xe graphics, 24 GB of RAM) the whole system uses **about
+2.3 GB of RAM** with ETEA running on its own, and the frame rate stays steady through page turns,
+orbit and window animations.
+
 ## Requirements
 
 - **Hyprland 0.56 or newer, with the Lua config.** ETEA talks to Hyprland through `hyprctl eval`.
@@ -61,6 +82,26 @@ On Arch, something like:
 yay -S quickshell-git cava cliphist wl-clipboard grim slurp wf-recorder hyprpicker hyprsunset \
     brightnessctl jq curl libnotify xdg-user-dirs zenity networkmanager bluez upower \
     power-profiles-daemon pipewire-pulse libpulse hypridle hyprlock fprintd
+```
+
+### On Fedora
+
+> 🧪 **Not fully tested yet.** ETEA is developed on Arch (CachyOS). Nothing in it is tied to one
+> distribution, but this route hasn't been walked end to end. If you try it, an issue saying what
+> worked and what didn't would help a lot.
+
+Fedora 45 ships Quickshell 0.2.1 in its own repos; on Fedora 41 to 43 it comes from the
+[errornointernet/quickshell](https://copr.fedorainfracloud.org/coprs/errornointernet/quickshell)
+COPR. The tricky part is Hyprland: ETEA needs **0.56 or newer with the Lua config**, which is
+usually newer than what Fedora carries, so it has to come from a COPR that follows Hyprland
+closely (check which version it builds before enabling it). Package names can differ a little
+from release to release; roughly:
+
+```sh
+sudo dnf copr enable errornointernet/quickshell   # Fedora 41 to 43 only
+sudo dnf install quickshell cava cliphist wl-clipboard grim slurp wf-recorder hyprpicker \
+    hyprsunset brightnessctl jq curl libnotify xdg-user-dirs zenity NetworkManager bluez \
+    upower power-profiles-daemon pulseaudio-utils hypridle hyprlock fprintd fprintd-pam
 ```
 
 ## Installation
@@ -163,5 +204,9 @@ Want ETEA in your language? Copy `i18n/en.json`, translate each line, add it to
 - Ideas borrowed with love from [end4's dots](https://github.com/end-4/dots-hyprland) and
   [Caelestia](https://github.com/caelestia-dots/shell).
 
-The project doesn't have a license yet. Until it does, please ask before reusing the code or the
-artwork.
+## License
+
+ETEA Shell is free software under the [GNU General Public License v3.0](LICENSE): use it, study
+it, change it and share it, as long as what you share stays under the same terms. That covers
+the code and the artwork made for it, the lock screen drawing included. Poppins and Material
+Symbols keep their own licenses (`assets/fonts/OFL.txt` and `assets/icons/LICENSE.txt`).
