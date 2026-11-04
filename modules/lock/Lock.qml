@@ -24,6 +24,8 @@ Scope {
     property real blockedUntil: 0
     property real now: Date.now()
     property string mainScreen: ""
+    property real lockedAt: Date.now() // the evening on the first page deepens from here
+    property int signalsAtLock: 0 // signals that come in after this each light a star
     readonly property bool blocked: blockedUntil > now
     readonly property bool active: Menus.locked || Menus.lockPreview
 
@@ -49,6 +51,8 @@ Scope {
         stars = 0;
         revealed = false;
         leaving = false;
+        lockedAt = Date.now();
+        signalsAtLock = Notifs.count;
         readCaps();
     }
 
