@@ -53,7 +53,7 @@ It started as "I want my desktop to feel like my drawings" and kind of got out o
 | Orbit, every page at once | The launcher |
 | ![Settings, where you choose your world or make one from a picture](doc/Screenshots/settings.png) | ![The session menu: lock, sleep, log out, restart, shut down](doc/Screenshots/quitpage.png) |
 | Settings: choose your world | The session menu |
-| ![The lock screen as your world: the time, the song and the fingerprint reader](doc/Screenshots/Loginscreen1.png) | ![The lock screen as a story: a woman reaching for the stars](doc/Screenshots/Loginscreen2.png) |
+| ![The lock screen as your world: the time drawn as a constellation over the evening, the day, the song and the fingerprint reader](doc/Screenshots/Loginscreen1.png) | ![The lock screen as a story: a woman reaching for the stars](doc/Screenshots/Loginscreen2.png) |
 | The lock screen, as your world | …or as a story |
 
 ![Every shortcut on Super + /, ETEA's and your own](doc/Screenshots/shortcuts.png)

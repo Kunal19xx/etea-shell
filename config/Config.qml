@@ -75,7 +75,7 @@ Singleton {
     property alias language: saved.language // "auto" follows the system, or a code from Lang.languages
     property alias pagesShown: saved.pagesShown
     property alias lockImage: saved.lockImage // a picture for the lock's first page, empty shows the landscape
-    property alias lockScene: saved.lockScene // what the password page draws, one of LockScene's scenes
+    property alias lockScene: saved.lockScene // what the password page draws: "hand" or "skyward"
     property alias lockWith: saved.lockWith // "etea", or "hyprlock" for Hyprland's own lock
     property alias lockFingerprint: saved.lockFingerprint // a finger unlocks too, when there's a reader
     property alias barPosition: saved.barPosition // "top" or "bottom"

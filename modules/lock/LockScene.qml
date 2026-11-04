@@ -258,7 +258,7 @@ Item {
         Loader {
             id: stage
 
-            readonly property string file: ({ hand: "HandScene.qml" })[Config.lockScene] ?? "PlainScene.qml"
+            readonly property string file: ({ hand: "HandScene.qml", skyward: "SkywardScene.qml" })[Config.lockScene] ?? "PlainScene.qml"
 
             function load(name) {
                 setSource(Qt.resolvedUrl(`scenes/${name}`), { host: root });
