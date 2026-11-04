@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import qs.config
+import qs.services
 
 // The time, enormous, standing in the sky and dissolving as it sinks towards the
 // mountains. It sits behind the terrain, so the hills really do pass in front of it.
@@ -13,18 +14,12 @@ Item {
     implicitWidth: digits.implicitWidth
     implicitHeight: digits.implicitHeight
 
-    SystemClock {
-        id: clock
-
-        precision: SystemClock.Minutes
-    }
-
     Text {
         visible: root.options?.date !== false
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: digits.top
         anchors.bottomMargin: -root.sky * 0.085
-        text: Qt.locale(Config.locale).toString(clock.date, Lang.t("dddd d MMMM"))
+        text: Qt.locale(Config.locale).toString(Time.now, Lang.t("dddd d MMMM"))
         color: Theme.skyInk
         font.family: Theme.font
         font.pixelSize: root.sky * 0.03
@@ -34,7 +29,7 @@ Item {
     Text {
         id: digits
 
-        text: Config.time(clock.date, { suffix: false })
+        text: Config.time(Time.now, { suffix: false })
         color: Theme.skyInk
         font.family: Theme.font
         font.pixelSize: root.sky * 0.54

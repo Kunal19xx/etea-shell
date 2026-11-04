@@ -102,19 +102,13 @@ Item {
         visible: root.main && opacity > 0
         opacity: 1 - root.reveal
 
-        SystemClock {
-            id: clock
-
-            precision: SystemClock.Minutes
-        }
-
         Column {
             x: root.width * 0.044
             y: root.height * 0.07
             spacing: glance.size * 0.006
 
             Text {
-                text: Config.time(clock.date)
+                text: Config.time(Time.now)
                 color: Theme.skyInk
                 font.family: Theme.font
                 font.pixelSize: glance.size * 0.075
@@ -123,7 +117,7 @@ Item {
             }
 
             Text {
-                text: Qt.locale(Config.locale).toString(clock.date, Lang.t("dddd d MMMM"))
+                text: Qt.locale(Config.locale).toString(Time.now, Lang.t("dddd d MMMM"))
                 color: Theme.skyInk
                 font.family: Theme.font
                 font.pixelSize: glance.size * 0.022

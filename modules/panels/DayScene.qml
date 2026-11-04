@@ -12,7 +12,7 @@ Item {
 
     property bool alive: visible
 
-    readonly property real now: clock.date.getTime()
+    readonly property real now: Time.now.getTime()
     readonly property real rise: Weather.sunrise.getTime()
     readonly property real set: Weather.sunset.getTime()
     readonly property bool day: now >= rise && now < set
@@ -28,12 +28,6 @@ Item {
     readonly property var weather: Weather.look(Weather.code, Weather.day)
 
     implicitHeight: 172
-
-    SystemClock {
-        id: clock
-
-        precision: SystemClock.Minutes
-    }
 
     // The logbook would like the weather too, while it's open
     onAliveChanged: alive ? Weather.join() : Weather.leave()
@@ -103,7 +97,7 @@ Item {
             anchors.centerIn: parent
             width: 24
             height: 24
-            at: clock.date
+            at: Time.now
         }
     }
 
@@ -113,7 +107,7 @@ Item {
         spacing: 0
 
         Text {
-            text: Config.time(clock.date)
+            text: Config.time(Time.now)
             color: Theme.text
             font.family: Theme.font
             font.pixelSize: 34
@@ -121,7 +115,7 @@ Item {
         }
 
         Text {
-            text: Qt.locale(Config.locale).toString(clock.date, Lang.t("dddd d MMMM"))
+            text: Qt.locale(Config.locale).toString(Time.now, Lang.t("dddd d MMMM"))
             color: Qt.alpha(Theme.text, 0.75)
             font.family: Theme.font
             font.pixelSize: 13

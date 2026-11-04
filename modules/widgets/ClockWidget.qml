@@ -14,8 +14,8 @@ Item {
 
     readonly property real size: 350
     readonly property real middle: size / 2
-    readonly property int hour: clock.date.getHours()
-    readonly property int minute: clock.date.getMinutes()
+    readonly property int hour: Time.now.getHours()
+    readonly property int minute: Time.now.getMinutes()
     readonly property real dayTime: hour + minute / 60
     property real seconds: new Date().getSeconds()
 
@@ -44,12 +44,6 @@ Item {
     onMinuteChanged: {
         dial.requestPaint();
         pulse.restart();
-    }
-
-    SystemClock {
-        id: clock
-
-        precision: SystemClock.Minutes
     }
 
     FrameAnimation {
@@ -207,7 +201,7 @@ Item {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Config.time(clock.date, { suffix: false })
+            text: Config.time(Time.now, { suffix: false })
             color: Theme.text
             font.family: Theme.font
             font.pixelSize: 54
@@ -218,7 +212,7 @@ Item {
         Text {
             visible: root.options?.date !== false
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Qt.locale(Config.locale).toString(clock.date, Lang.t("ddd d MMM"))
+            text: Qt.locale(Config.locale).toString(Time.now, Lang.t("ddd d MMM"))
             color: Qt.alpha(Theme.text, 0.8)
             font.family: Theme.font
             font.pixelSize: 15
