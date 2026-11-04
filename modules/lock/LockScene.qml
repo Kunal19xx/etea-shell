@@ -579,14 +579,16 @@ Item {
         focus: root.main
         Keys.onPressed: event => {
             event.accepted = true;
-            if (event.key === Qt.Key_Escape)
+            if (event.key === Qt.Key_CapsLock)
+                capsCheck.restart();
+            if (!root.lock.revealed && event.key !== Qt.Key_Escape)
+                root.lock.wake();
+            else if (event.key === Qt.Key_Escape)
                 root.preview ? Menus.lockPreview = false : root.lock.back();
             else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
                 root.lock.submit();
             else if (event.key === Qt.Key_Backspace)
                 root.lock.erase();
-            else if (event.key === Qt.Key_CapsLock)
-                capsCheck.restart();
             else if (event.text.length > 0 && event.text.charCodeAt(0) >= 32)
                 root.lock.type(event.text);
         }

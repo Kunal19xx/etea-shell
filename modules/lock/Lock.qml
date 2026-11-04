@@ -115,7 +115,15 @@ Scope {
         }
     }
 
-    // The key that opens the sky counts too, so nothing typed is ever lost
+    // The first key only opens the sky. Counting it would slip a character into the
+    // password that nobody meant to type.
+    function wake() {
+        if (vanishing)
+            return;
+        revealed = true;
+        idle.restart();
+    }
+
     function type(text) {
         if (checking || blocked || vanishing)
             return;
