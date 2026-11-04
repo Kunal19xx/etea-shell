@@ -69,12 +69,6 @@ Item {
         return { x: shoulder.x + Math.cos(r) * radius, y: shoulder.y + Math.sin(r) * radius, angle: angle, radius: radius };
     }
 
-    opacity: lock.leaving ? 0 : 1
-
-    Behavior on opacity {
-        NumberAnimation { duration: 260 }
-    }
-
     // First page: the landscape, or your own picture
     World {
         anchors.fill: parent

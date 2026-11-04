@@ -106,6 +106,8 @@ Scope {
         hl.layer_rule({ match = { namespace = "^etea:panel-.*" }, no_anim = true })
         -- The capture overlay has to be gone at once, or it ends up in the picture
         hl.layer_rule({ match = { namespace = "^etea:capture$" }, no_anim = true })
+        -- The unlock folds into its own star, a fade would show the desktop before it
+        hl.layer_rule({ match = { namespace = "^etea:unlock$" }, no_anim = true })
 
         -- A new window waits a beat so ETEA can get the sky in front of it: this curve sits
         -- at zero almost the whole way. It all happens inside Hyprland, so a window can't

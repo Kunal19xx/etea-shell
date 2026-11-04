@@ -5,6 +5,7 @@ import Quickshell.Io
 import Quickshell.Services.Pam
 import Quickshell.Wayland
 import qs.config
+import qs.modules.stage
 import qs.services
 
 // The lock screen. The first page is only the landscape; a key opens the starry sky,
@@ -232,18 +233,85 @@ Scope {
         }
     }
 
-    // A short fade, then the desktop
+    // Unlocking: a copy of the scene goes up over everything, the session unlocks beneath
+    // it, then the copy folds into the last star and the desktop is there around it.
+    // The lock itself can't do the folding: while it's up, nothing behind it is drawn.
+    property real fold: 0
+
     Timer {
         id: letGo
 
-        interval: 280
+        interval: 220 // long enough for the copy to be on screen
         onTriggered: {
             Menus.locked = false;
             Menus.lockPreview = false;
+            folding.restart();
+        }
+    }
+
+    NumberAnimation {
+        id: folding
+
+        target: root
+        property: "fold"
+        from: 0
+        to: 1
+        duration: 900
+        easing.type: Easing.InCubic
+        onFinished: {
             root.typed = "";
             root.stars = 0;
             root.revealed = false;
             root.leaving = false;
+            root.fold = 0;
+        }
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        PanelWindow {
+            id: curtain
+
+            required property var modelData
+
+            screen: modelData
+            visible: root.leaving
+            color: "transparent"
+            exclusionMode: ExclusionMode.Ignore
+            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.namespace: "etea:unlock"
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            mask: Region {} // the desktop takes clicks straight away
+
+            anchors {
+                top: true
+                bottom: true
+                left: true
+                right: true
+            }
+
+            Loader {
+                anchors.fill: parent
+                active: root.leaving
+
+                sourceComponent: LockScene {
+                    id: farewell
+
+                    readonly property var last: starAt(Math.max(0, root.stars - 1))
+
+                    lock: root
+                    main: curtain.modelData.name === root.mainScreen
+                    layer.enabled: true
+                    // Into the newest star by her hand, into the time when a finger opened it
+                    // straight from the landscape, or the middle of the other screens
+                    layer.effect: StarMask {
+                        center: !farewell.main ? Qt.point(farewell.width / 2, farewell.height / 2) : root.revealed ? Qt.point(farewell.last.x, farewell.last.y) : Qt.point(farewell.width / 2, farewell.height * 0.21)
+                        reach: fullReach * (1 - root.fold)
+                        shine: root.fold * 0.9
+                    }
+                }
+            }
         }
     }
 
