@@ -1,3 +1,5 @@
+<img src="assets/logo.png" width="112" alt="The ETEA logo: three golden four-pointed stars">
+
 # ETEA Shell
 
 **Exit The Earth Atmosphere.** A desktop shell for [Hyprland](https://hyprland.org), built on
