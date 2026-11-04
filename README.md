@@ -40,8 +40,9 @@ It started as "I want my desktop to feel like my drawings" and kind of got out o
 - **Everyday tools:** clipboard history with image previews, region / window / full-screen
   capture, screen recording with or without sound, colour picker, night light, stay-awake, a
   polkit agent, battery alerts, OSDs.
-- **A lock screen with a story.** A woman reaches for the stars as you type, her hand hiding each
-  new one. It locks on idle and before sleep, and your fingerprint works too.
+- **A lock screen with a story.** Pick your scene: a woman reaching for the stars, her hand hiding
+  each new one as you type, or two of them in the grass, one pointing out the constellation your
+  password draws. It locks on idle and before sleep, and your fingerprint works too.
 - **Shortcut cheatsheet** on `Super + /`, built from your own Hyprland binds.
 - **French and English**, and adding a language is one JSON file.
 
@@ -54,9 +55,9 @@ It started as "I want my desktop to feel like my drawings" and kind of got out o
 | ![Settings, where you choose your world or make one from a picture](doc/Screenshots/settings.png) | ![The session menu: lock, sleep, log out, restart, shut down](doc/Screenshots/quitpage.png) |
 | Settings: choose your world | The session menu |
 | ![The lock screen as your world: the time drawn as a constellation over the evening, the day, the song and the fingerprint reader](doc/Screenshots/Loginscreen1.png) | ![The lock screen as a story: a woman reaching for the stars](doc/Screenshots/Loginscreen2.png) |
-| The lock screen, as your world | …or as a story |
-
-![Every shortcut on Super + /, ETEA's and your own](doc/Screenshots/shortcuts.png)
+| The lock screen, as your world | …then a story: the reaching hand |
+| ![Under the stars: two of them in the grass at night, she points at the constellation your password draws](doc/Screenshots/Loginscreen3.png) | ![Every shortcut on Super + /, ETEA's and your own](doc/Screenshots/shortcuts.png) |
+| …or under the stars | Every shortcut on `Super + /` |
 
 ## How heavy is it?
 
