@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import qs.config
 import qs.modules.bar
 import qs.services
@@ -44,12 +45,15 @@ ColumnLayout {
         Layout.topMargin: 4
         spacing: 22
 
-        Star {
+        // The PNG keeps the glow, Qt's SVG renderer leaves it out
+        Image {
             Layout.alignment: Qt.AlignVCenter
-            Layout.leftMargin: 6
-            size: 22
-            lit: true
-            animated: false
+            Layout.preferredWidth: 64
+            Layout.preferredHeight: 64
+            source: Quickshell.shellPath("assets/logo.png")
+            sourceSize: Qt.size(128, 128)
+            fillMode: Image.PreserveAspectFit
+            mipmap: true
         }
 
         ColumnLayout {
