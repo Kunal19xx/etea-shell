@@ -117,6 +117,8 @@ Scope {
 
         -- Hyprland tells ETEA a window is coming before it appears, so the screen can be
         -- frozen in time. Neighbours start moving slowly, just long enough for that photo.
+        -- Theme.windowMoveCurve uses this curve, so make sure it exists (stock configs do not define it)
+        hl.curve("emphasizedDecel", { type = "bezier", points = { { 0.05, 0.7 }, { 0.1, 1 } } })
         hl.curve("eteaSlowStart", { type = "bezier", points = { { 0.7, 0 }, { 0.3, 1 } } })
         ETEA_MAKE_ROOM = ${Theme.openMakeRoom / 100}
         if not ETEA_BIRTHS then
