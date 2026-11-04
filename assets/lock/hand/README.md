@@ -1,7 +1,8 @@
-# Lock screen art
+# Lock screen art: the hand
 
-The woman, her arm and her hand on the lock screen come from this folder. They are
-traced from `Reaching Woman with Flowing Curls.png` (1024×1536, already cut out):
+The woman, her arm and her hand on the lock screen (the `hand` scene, drawn by
+`modules/lock/scenes/HandScene.qml`) come from this folder. They are traced from
+`Reaching Woman with Flowing Curls.png` (1024×1536, already cut out):
 
 1. The PNG is split in two: the arm above the sleeve, given a stub that carries on under
    the sleeve so turning it never opens a gap, and the body without it.

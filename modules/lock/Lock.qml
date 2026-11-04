@@ -35,15 +35,6 @@ Scope {
     readonly property bool listening: active && fingerReady && Config.lockFingerprint && !leaving
     property int fingerMisses: 0 // counts wrong fingers, so the scene can react
 
-    // Where the woman, her arm and the stars sit, from assets/lock/scene.json
-    readonly property var scene: {
-        try {
-            return JSON.parse(sceneFile.text());
-        } catch (error) {
-            return null;
-        }
-    }
-
     signal succeeded()
 
     function begin() {
@@ -186,16 +177,6 @@ Scope {
             begin();
     }
 
-    FileView {
-        id: sceneFile
-
-        path: Quickshell.shellPath("assets/lock/scene.json")
-        blockLoading: true
-        // Tuning the scene shows up right away in the preview
-        watchChanges: true
-        onFileChanged: reload()
-    }
-
     PamContext {
         id: pam
 
@@ -298,15 +279,13 @@ Scope {
                 sourceComponent: LockScene {
                     id: farewell
 
-                    readonly property var last: starAt(Math.max(0, root.stars - 1))
-
                     lock: root
                     main: curtain.modelData.name === root.mainScreen
                     layer.enabled: true
-                    // Into the newest star by her hand, into the time when a finger opened it
+                    // Into the scene's newest star, into the time when a finger opened it
                     // straight from the landscape, or the middle of the other screens
                     layer.effect: StarMask {
-                        center: !farewell.main ? Qt.point(farewell.width / 2, farewell.height / 2) : root.revealed ? Qt.point(farewell.last.x, farewell.last.y) : Qt.point(farewell.width / 2, farewell.height * 0.21)
+                        center: !farewell.main ? Qt.point(farewell.width / 2, farewell.height / 2) : root.revealed ? farewell.unlockAt : Qt.point(farewell.width / 2, farewell.height * 0.21)
                         reach: fullReach * (1 - root.fold)
                         shine: root.fold * 0.9
                     }

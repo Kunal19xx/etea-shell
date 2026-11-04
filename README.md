@@ -245,7 +245,7 @@ scripts/dev.sh stop    # stop it
 ```
 
 The visual rules live in `DESIGN_LANGUAGE.md`, the lock screen art and how it's traced in
-`assets/lock/README.md`.
+`assets/lock/hand/README.md`.
 
 Want ETEA in your language? Copy `i18n/en.json`, translate each line, add it to
 `Lang.languages` in `config/Lang.qml`, and send a PR. 💌
