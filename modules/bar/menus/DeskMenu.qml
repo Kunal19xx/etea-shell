@@ -139,6 +139,7 @@ Scope {
                     spacing: 4
 
                     Text {
+                        visible: !Desk.frozen
                         text: Lang.t("Taille")
                         color: Qt.alpha(Theme.text, 0.6)
                         font.family: Theme.font
@@ -146,6 +147,7 @@ Scope {
                     }
 
                     MenuSlider {
+                        visible: !Desk.frozen
                         Layout.fillWidth: true
                         value: (Desk.size(panel.shown) - 0.5) / 1.1
                         onMoved: value => Desk.update(panel.shown, { size: Math.round((0.5 + value * 1.1) * 100) / 100 })
@@ -281,10 +283,30 @@ Scope {
                     font.pixelSize: 12
                 }
 
+                // Off by default: a stray Super + drag or wheel can't move or resize anything then
+                RowLayout {
+                    visible: panel.shown === "add"
+                    Layout.fillWidth: true
+                    Layout.topMargin: 8
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: Lang.t("Figer les widgets")
+                        color: Theme.text
+                        font.family: Theme.font
+                        font.pixelSize: 13
+                    }
+
+                    MenuSwitch {
+                        on: Config.widgetsFrozen
+                        onToggled: Config.widgetsFrozen = !Config.widgetsFrozen
+                    }
+                }
+
                 Text {
                     Layout.fillWidth: true
                     Layout.topMargin: 8
-                    text: Lang.t("Super + glisser pour déplacer, Super + molette pour la taille.")
+                    text: Desk.frozen ? Lang.t("Les widgets sont figés : ils restent à leur place et gardent leur taille.") : Lang.t("Super + glisser pour déplacer, Super + molette pour la taille.")
                     wrapMode: Text.WordWrap
                     color: Qt.alpha(Theme.text, 0.45)
                     font.family: Theme.font

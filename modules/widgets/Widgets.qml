@@ -92,7 +92,7 @@ Item {
             Item {
                 anchors.fill: parent
                 anchors.margins: -14
-                opacity: slot.dragging || resized.running || (hover.hovered && (hover.point.modifiers & Qt.MetaModifier)) ? 1 : 0
+                opacity: slot.dragging || resized.running || (!Desk.frozen && hover.hovered && (hover.point.modifiers & Qt.MetaModifier)) ? 1 : 0
                 visible: opacity > 0
 
                 Behavior on opacity {
@@ -153,7 +153,8 @@ Item {
                         Desk.openMenu(slot.type, at, QsWindow.window?.screen ?? null);
                         return;
                     }
-                    if (!Desk.takeGrab() && !(mouse.modifiers & Qt.MetaModifier)) {
+                    // Frozen widgets only let the click through
+                    if (Desk.frozen || (!Desk.takeGrab() && !(mouse.modifiers & Qt.MetaModifier))) {
                         mouse.accepted = false;
                         return;
                     }
