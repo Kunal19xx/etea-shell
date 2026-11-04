@@ -69,12 +69,6 @@ Item {
         return { x: shoulder.x + Math.cos(r) * radius, y: shoulder.y + Math.sin(r) * radius, angle: angle, radius: radius };
     }
 
-    opacity: lock.leaving ? 0 : 1
-
-    Behavior on opacity {
-        NumberAnimation { duration: 260 }
-    }
-
     // First page: the landscape, or your own picture
     World {
         anchors.fill: parent
@@ -89,9 +83,52 @@ Item {
         fillMode: Image.PreserveAspectCrop
     }
 
-    // What you'd glance at before unlocking, kept small in the corners of the first page:
-    // the time and what's playing on one side, the battery, the signals and the reader on
-    // the other. It all steps back as soon as you type.
+    // The longer the screen stays locked, the further the evening goes: over twenty
+    // minutes the sky deepens towards the night of the second page and stars come out
+    Item {
+        id: dusk
+
+        readonly property real fall: Math.max(0, Math.min(1, (Time.now.getTime() - root.lock.lockedAt) / 1200000))
+        readonly property color night: root.scene?.sky?.top ?? "#0b1026"
+        property real shown: fall
+
+        anchors.fill: parent
+        opacity: shown * 0.85
+        visible: opacity > 0
+
+        Behavior on shown {
+            NumberAnimation { duration: 60000 }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            gradient: Gradient {
+                GradientStop { position: 0; color: dusk.night }
+                GradientStop { position: 0.6; color: Qt.alpha(dusk.night, 0.55) }
+                GradientStop { position: 1; color: Qt.alpha(dusk.night, 0.3) }
+            }
+        }
+
+        // Drawn once, a few hundred pinpricks, brighter towards the top
+        Canvas {
+            anchors.fill: parent
+            onWidthChanged: requestPaint()
+            onPaint: {
+                const g = getContext("2d");
+                g.reset();
+                g.fillStyle = "#ffffff";
+                for (let i = 0; i < 260; i++) {
+                    const x = (root.jitter(i, 11) + 0.5) * width, y = Math.pow(root.jitter(i, 12) + 0.5, 1.6) * height * 0.75;
+                    g.globalAlpha = (0.25 + (root.jitter(i, 13) + 0.5) * 0.6) * (1 - y / height);
+                    g.fillRect(x, y, 1.5, 1.5);
+                }
+            }
+        }
+    }
+
+    // What you'd glance at before unlocking: the time as a constellation high in the sky,
+    // the day and what's playing under it, the battery, the signals and the reader in the
+    // corner. It all steps back as soon as you type.
     Item {
         id: glance
 
@@ -103,33 +140,51 @@ Item {
         opacity: 1 - root.reveal
 
         Column {
-            x: root.width * 0.044
-            y: root.height * 0.07
-            spacing: glance.size * 0.006
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: root.height * 0.13
+            spacing: glance.size * 0.012
 
-            Text {
-                text: Config.time(Time.now)
-                color: Theme.skyInk
-                font.family: Theme.font
-                font.pixelSize: glance.size * 0.075
-                font.weight: Font.Medium
-                renderType: Text.CurveRendering
+            StarClock {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: Config.time(Time.now, { suffix: false })
+                digitHeight: glance.size * 0.17
             }
 
             Text {
-                text: Qt.locale(Config.locale).toString(Time.now, Lang.t("dddd d MMMM"))
+                anchors.horizontalCenter: parent.horizontalCenter
+                topPadding: glance.size * 0.03
+                // In twelve-hour time the morning or evening goes with the day
+                text: Qt.locale(Config.locale).toString(Time.now, Lang.t("dddd d MMMM")) + (Config.clockFormat === "12" ? Qt.formatTime(Time.now, "  ·  AP") : "")
                 color: Theme.skyInk
                 font.family: Theme.font
-                font.pixelSize: glance.size * 0.022
+                font.pixelSize: glance.size * 0.024
+                font.letterSpacing: glance.size * 0.001
             }
 
             Text {
                 visible: Music.player !== null
-                topPadding: glance.size * 0.012
+                anchors.horizontalCenter: parent.horizontalCenter
                 text: `♪  ${Music.player?.trackTitle ?? ""}${Music.player?.trackArtist ? " · " + Music.player.trackArtist : ""}`
                 color: Qt.alpha(Theme.skyInk, 0.75)
                 font.family: Theme.font
                 font.pixelSize: glance.size * 0.016
+            }
+        }
+
+        // Every signal that comes in while you're away lights a star of its own, around
+        // the time rather than over it
+        Repeater {
+            model: Math.min(24, Math.max(0, Notifs.count - root.lock.signalsAtLock))
+
+            Star {
+                required property int index
+                readonly property real across: 0.08 + (root.jitter(index, 21) + 0.5) * 0.84
+                readonly property real down: 0.06 + (root.jitter(index, 22) + 0.5) * 0.46
+
+                x: across * root.width - size
+                y: (across > 0.26 && across < 0.74 && down > 0.1 && down < 0.42 ? down + 0.34 : down) * root.height - size
+                size: glance.size * (0.009 + (root.jitter(index, 23) + 0.5) * 0.005)
+                lit: true
             }
         }
 
