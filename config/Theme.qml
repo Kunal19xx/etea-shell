@@ -88,7 +88,7 @@ Singleton {
     readonly property int openSpark: 40
     readonly property int openReveal: 420 * pace
     readonly property int openMakeRoom: 340 // how long neighbours take to slide aside, hidden behind the photo
-    readonly property string windowMoveCurve: "emphasizedDecel" // Hyprland's usual curve for moving windows
+    readonly property string windowMoveCurve: "eteaMove" // defined in Illumination
     readonly property int openCover: 200 // how long Hyprland hides a new window while the screen freezes
 
     // Going up: the ground curves away until it's a planet with your pages around it
