@@ -112,6 +112,15 @@ ColumnLayout {
         }
     }
 
+    SettingChoice {
+        visible: Config.lockWith === "etea"
+        label: Lang.t("Scène")
+        hint: Lang.t("Ce qui se dessine pendant que tu tapes ton mot de passe.")
+        options: [{ id: "hand", label: Lang.t("La main tendue") }, { id: "skyward", label: Lang.t("Sous les étoiles") }]
+        current: Config.lockScene
+        onPicked: id => Config.lockScene = id
+    }
+
     SettingRow {
         label: Lang.t("Essayer")
         hint: Lang.t("Ouvre l'écran sans rien verrouiller. Échap pour en sortir.")
