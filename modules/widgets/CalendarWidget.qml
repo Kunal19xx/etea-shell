@@ -14,12 +14,6 @@ Item {
     implicitWidth: 330
     implicitHeight: content.implicitHeight + 40
 
-    SystemClock {
-        id: clock
-
-        precision: SystemClock.Hours
-    }
-
     HandCard {
         anchors.fill: parent
         seed: "calendar"
@@ -43,7 +37,7 @@ Item {
 
             Text {
                 Layout.fillWidth: true
-                text: Qt.locale(Config.locale).toString(clock.date, "MMMM yyyy")
+                text: Qt.locale(Config.locale).toString(Time.now, "MMMM yyyy")
                 color: Theme.text
                 font.family: Theme.font
                 font.pixelSize: 17
@@ -54,7 +48,7 @@ Item {
 
                 Layout.preferredWidth: 28
                 Layout.preferredHeight: 28
-                at: clock.date
+                at: Time.now
             }
         }
 
@@ -67,8 +61,8 @@ Item {
 
         MonthGrid {
             Layout.fillWidth: true
-            month: clock.date
-            today: clock.date
+            month: Time.now
+            today: Time.now
             heading: "#b9a2f0"
         }
     }

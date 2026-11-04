@@ -55,6 +55,7 @@ Singleton {
     // state: let go of Super before the button and Hyprland never says it's over.
     property real grabbedAt: 0
     property real lastGesture: 0 // when a Super gesture last landed on a widget
+    readonly property bool frozen: Config.widgetsFrozen // they stay where they are, at their size
 
     // Hyprland's Super + drag moves windows, and swallows the click even over the empty
     // desktop. So while the pointer rests on a widget, that bind steps aside for one of
@@ -64,7 +65,7 @@ Singleton {
     // it was swapped, so a reload or a crash of the shell can't leave it missing.
     property bool windowDrag: false
     property bool lifted: false
-    readonly property bool liftWanted: windowDrag && (hovered !== "" || carrying)
+    readonly property bool liftWanted: windowDrag && !frozen && (hovered !== "" || carrying)
 
     readonly property string putBack: 'if ETEA_LIFTED then hl.unbind("SUPER + mouse:272") hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true, description = "Window: Move" }) end ETEA_LIFTED = false'
 
@@ -129,6 +130,8 @@ Singleton {
     }
 
     function grow(type, steps) {
+        if (frozen)
+            return;
         lastGesture = Date.now();
         update(type, { size: Math.round(Math.max(0.5, Math.min(1.6, size(type) + steps * 0.05)) * 100) / 100 });
     }

@@ -13,9 +13,9 @@ Column {
     property real enter: 0 // 1 the moment a new line comes up, back to 0 as it settles
 
     readonly property bool singing: Lyrics.lookup === "found"
+    readonly property bool playing: Music.player?.isPlaying ?? false
+    property bool awake: playing // stays a moment after the music stops, so a gap between songs doesn't blink
     readonly property string waiting: {
-        if (!Music.player)
-            return Lang.t("Les paroles apparaîtront ici.");
         switch (Lyrics.lookup) {
         case "loading":
             return Lang.t("On cherche les paroles…");
@@ -29,6 +29,28 @@ Column {
 
     width: sky
     spacing: sky * 0.012
+
+    // Out of sight while nothing plays. Super still finds it, to move it or put it away.
+    opacity: awake ? 1 : 0
+    onPlayingChanged: {
+        if (playing) {
+            nap.stop();
+            awake = true;
+        } else {
+            nap.restart();
+        }
+    }
+
+    Behavior on opacity {
+        NumberAnimation { duration: Theme.normal }
+    }
+
+    Timer {
+        id: nap
+
+        interval: 1500
+        onTriggered: root.awake = false
+    }
 
     Connections {
         target: Lyrics

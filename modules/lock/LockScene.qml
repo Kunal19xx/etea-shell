@@ -102,19 +102,13 @@ Item {
         visible: root.main && opacity > 0
         opacity: 1 - root.reveal
 
-        SystemClock {
-            id: clock
-
-            precision: SystemClock.Minutes
-        }
-
         Column {
             x: root.width * 0.044
             y: root.height * 0.07
             spacing: glance.size * 0.006
 
             Text {
-                text: Config.time(clock.date)
+                text: Config.time(Time.now)
                 color: Theme.skyInk
                 font.family: Theme.font
                 font.pixelSize: glance.size * 0.075
@@ -123,7 +117,7 @@ Item {
             }
 
             Text {
-                text: Qt.locale(Config.locale).toString(clock.date, Lang.t("dddd d MMMM"))
+                text: Qt.locale(Config.locale).toString(Time.now, Lang.t("dddd d MMMM"))
                 color: Theme.skyInk
                 font.family: Theme.font
                 font.pixelSize: glance.size * 0.022
@@ -585,14 +579,16 @@ Item {
         focus: root.main
         Keys.onPressed: event => {
             event.accepted = true;
-            if (event.key === Qt.Key_Escape)
+            if (event.key === Qt.Key_CapsLock)
+                capsCheck.restart();
+            if (!root.lock.revealed && event.key !== Qt.Key_Escape)
+                root.lock.wake();
+            else if (event.key === Qt.Key_Escape)
                 root.preview ? Menus.lockPreview = false : root.lock.back();
             else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
                 root.lock.submit();
             else if (event.key === Qt.Key_Backspace)
                 root.lock.erase();
-            else if (event.key === Qt.Key_CapsLock)
-                capsCheck.restart();
             else if (event.text.length > 0 && event.text.charCodeAt(0) >= 32)
                 root.lock.type(event.text);
         }

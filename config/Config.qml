@@ -59,6 +59,7 @@ Singleton {
     property alias status: saved.status
     property alias widgets: saved.widgets
     property alias widgetStyle: saved.widgetStyle // "sky" or "celestial"
+    property alias widgetsFrozen: saved.widgetsFrozen // nothing moves or resizes them
     property alias decorations: saved.decorations
     property alias groundMusic: saved.groundMusic // "lines", "bars" or "off"
     property alias groundLift: saved.groundLift
@@ -153,6 +154,7 @@ Singleton {
             property var decorations: []
 
             property string widgetStyle: "sky"
+            property bool widgetsFrozen: false
             property string groundMusic: "lines"
             property real groundLift: 96
             property real terrainHeight: 0.089

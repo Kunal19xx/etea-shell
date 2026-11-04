@@ -7,14 +7,10 @@ import qs.services
 Item {
     id: root
 
+    readonly property date now: Config.clockSeconds ? Time.exact : Time.now
+
     implicitWidth: row.implicitWidth
     implicitHeight: row.implicitHeight
-
-    SystemClock {
-        id: clock
-
-        precision: Config.clockSeconds ? SystemClock.Seconds : SystemClock.Minutes
-    }
 
     Row {
         id: row
@@ -23,7 +19,7 @@ Item {
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: Config.time(clock.date, { seconds: Config.clockSeconds })
+            text: Config.time(root.now, { seconds: Config.clockSeconds })
             font.features: { "tnum": 1 }
             color: Theme.text
             font.family: Theme.font
@@ -34,7 +30,7 @@ Item {
         Text {
             visible: Config.dateFormat !== "off"
             anchors.verticalCenter: parent.verticalCenter
-            text: Qt.locale(Config.locale).toString(clock.date, Lang.t(Config.dateFormat === "short" ? "ddd d MMM" : "dddd d MMMM"))
+            text: Qt.locale(Config.locale).toString(root.now, Lang.t(Config.dateFormat === "short" ? "ddd d MMM" : "dddd d MMMM"))
             color: Theme.textSoft
             font.family: Theme.font
             font.pixelSize: Theme.textSize
