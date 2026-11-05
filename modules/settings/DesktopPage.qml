@@ -51,6 +51,16 @@ ColumnLayout {
         onMoved: value => Config.terrainRelief = value
     }
 
+    SettingSlider {
+        label: Lang.t("Grain")
+        hint: Lang.t("La texture du ciel, du terrain et de la barre. À 0 %, tout devient lisse.")
+        value: Config.grain
+        maximum: 2
+        shownAs: 100
+        unit: " %"
+        onMoved: value => Config.grain = Math.round(value * 20) / 20
+    }
+
     SettingChoice {
         label: Lang.t("Style des widgets")
         hint: Lang.t("Ciel écrit à même le ciel. Cadran céleste range tout dans des hublots.")

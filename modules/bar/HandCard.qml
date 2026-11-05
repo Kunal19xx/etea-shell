@@ -121,6 +121,7 @@ Item {
         property real hover: root.hovered ? 1 : 0
         property real rise: root.rise
         property real radius: root.radius
+        property real grain: Theme.grain
 
         readonly property var handler: hoverWatch
 

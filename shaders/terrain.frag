@@ -176,7 +176,7 @@ void main() {
         rim = vec4(rimColor.rgb * glow, glow);
     }
 
-    float n = mix(0.376, 0.627, hash(floor(qt_TexCoord0 * resolution)));
+    float n = mix(0.376, 0.627, hash(floor(gl_FragCoord.xy))); // per screen pixel, like the sky
     vec3 rgb = mix(color.rgb, overlay(color.rgb, n), grain);
     vec4 result = vec4(rgb * color.a, color.a);
     fragColor = (result + rim * (1.0 - result.a * 0.35)) * qt_Opacity;

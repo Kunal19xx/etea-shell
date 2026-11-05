@@ -12,7 +12,7 @@ Singleton {
     readonly property color skyTop: planet.skyTop
     readonly property color skyMid: planet.skyMid
     readonly property color skyLow: planet.skyLow
-    readonly property real grain: 0.34
+    readonly property real grain: 0.34 * Config.grain
 
     // The hills, from the farthest to the closest
     readonly property var terrainLayers: planet.terrain

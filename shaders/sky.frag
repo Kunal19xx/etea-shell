@@ -31,8 +31,10 @@ void main() {
     float y = qt_TexCoord0.y;
     vec3 color = y < 0.62 ? mix(colorTop.rgb, colorMid.rgb, y / 0.62) : mix(colorMid.rgb, colorLow.rgb, min((y - 0.62) / 0.3, 1.0));
 
-    float n = mix(0.376, 0.627, hash(floor(qt_TexCoord0 * resolution)));
-    color = mix(color, overlay(color, n), grain) + n * 0.022;
+    // One grain per screen pixel, so it stays even with fractional scaling
+    float n = mix(0.376, 0.627, hash(floor(gl_FragCoord.xy)));
+    // The faint lift stays at zero grain, so the colours don't shift
+    color = mix(color, overlay(color, n), grain) + 0.011 + (n - 0.5) * grain * 0.065;
 
     // Above the atmosphere the sky goes dark and the stars come out
     vec2 cell = floor(qt_TexCoord0 * resolution / 2.0);
