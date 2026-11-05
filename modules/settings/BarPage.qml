@@ -57,6 +57,14 @@ ColumnLayout {
         onToggled: Config.hotCorners = !Config.hotCorners
     }
 
+    SettingChoice {
+        label: Lang.t("Masquer la barre")
+        hint: Lang.t("Cachée, elle revient quand la souris touche le bord de l'écran. Ses coins s'allument d'abord pour montrer où viser.")
+        options: [{ id: "never", label: Lang.t("Jamais") }, { id: "always", label: Lang.t("Toujours") }, { id: "fullscreen", label: Lang.t("En plein écran") }]
+        current: Config.barHide
+        onPicked: id => Config.barHide = id
+    }
+
     SettingSection {
         text: Lang.t("Disposition")
     }
