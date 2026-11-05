@@ -13,6 +13,7 @@ Singleton {
 
     property bool settingsOpen: false
     property bool sessionOpen: false
+    property bool welcomeOpen: false
     property string lastClosed: ""
 
     property bool locked: false // the real lock, the session is shut until the password is right

@@ -144,6 +144,27 @@ ColumnLayout {
     }
 
     SettingSection {
+        text: Lang.t("Accueil")
+    }
+
+    SettingSwitch {
+        label: Lang.t("Au démarrage")
+        hint: Lang.t("Les six étoiles pour tout régler, à chaque fois que le shell démarre.")
+        on: Config.welcome
+        onToggled: Config.welcome = !Config.welcome
+    }
+
+    SettingRow {
+        label: Lang.t("Revoir l'accueil")
+
+        SettingButton {
+            label: Lang.t("Ouvrir")
+            quiet: true
+            onPicked: Menus.welcomeOpen = true
+        }
+    }
+
+    SettingSection {
         text: Lang.t("Le projet")
     }
 

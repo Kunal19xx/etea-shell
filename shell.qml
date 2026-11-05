@@ -15,6 +15,7 @@ import qs.modules.polkit
 import qs.modules.session
 import qs.modules.settings
 import qs.modules.stage
+import qs.modules.welcome
 
 // Where it all starts: the world in the back, the stage over the windows, the bar on top.
 ShellRoot {
@@ -37,4 +38,5 @@ ShellRoot {
     Osd {}
     Clipboard {}
     Capture {}
+    Welcome {}
 }
