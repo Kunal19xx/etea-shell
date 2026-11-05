@@ -65,6 +65,7 @@ Singleton {
     property alias groundLift: saved.groundLift
     property alias terrainHeight: saved.terrainHeight
     property alias terrainRelief: saved.terrainRelief
+    property alias grain: saved.grain // 0 is smooth, 1 is the mockup's texture
     property alias windowGlow: saved.windowGlow
     property alias windowGlowSize: saved.windowGlowSize
     property alias windowDim: saved.windowDim
@@ -160,6 +161,7 @@ Singleton {
             property real groundLift: 96
             property real terrainHeight: 0.089
             property real terrainRelief: 1
+            property real grain: 1
             property real windowGlow: 0.34
             property int windowGlowSize: 34
             property real windowDim: 0.28

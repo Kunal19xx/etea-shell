@@ -15,6 +15,7 @@ layout(std140, binding = 0) uniform buf {
     float hover;
     float rise;
     float radius;
+    float grain;
 };
 
 float hash(vec2 p) {
@@ -87,6 +88,6 @@ void main() {
     float toPointer = length(px - pointer);
     color += tint.rgb * exp(-toPointer * toPointer / 16000.0) * 0.16 * hover;
 
-    color += (hash(floor(gl_FragCoord.xy)) - 0.5) * 0.028; // per screen pixel, like the sky
+    color += (hash(floor(gl_FragCoord.xy)) - 0.5) * grain * 0.082; // per screen pixel, like the sky
     fragColor = vec4(color * alpha, alpha) * qt_Opacity;
 }

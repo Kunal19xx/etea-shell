@@ -17,7 +17,7 @@ ShaderEffect {
     property real relief: 1
     property real curve: 620
     property real planetAngle: 0
-    property real grain: 0.34
+    property real grain: Theme.grain
     property real orbit: 1
     property color rimColor: planet.skyLow
 
