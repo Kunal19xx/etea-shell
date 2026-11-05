@@ -14,6 +14,7 @@ Singleton {
     readonly property int pages: Math.max(4, Math.min(10, pagesShown))
     readonly property string locale: Lang.locale
     readonly property int launcherStars: 7 // how many apps the launcher shows at once
+    property bool ready: false // the file has been read, so the values below are really yours
 
     // What the bar can hold, and where each piece can go
     readonly property var barModuleChoices: [
@@ -76,6 +77,7 @@ Singleton {
     property alias language: saved.language // "auto" follows the system, or a code from Lang.languages
     property alias pagesShown: saved.pagesShown
     property alias lockImage: saved.lockImage // a picture for the lock's first page, empty shows the landscape
+    property alias welcome: saved.welcome // the welcome constellation, at every start
     property alias lockScene: saved.lockScene // what the password page draws: "hand" or "skyward"
     property alias lockWith: saved.lockWith // "etea", or "hyprlock" for Hyprland's own lock
     property alias lockFingerprint: saved.lockFingerprint // a finger unlocks too, when there's a reader
@@ -129,9 +131,11 @@ Singleton {
         watchChanges: true
         onFileChanged: reload()
         onAdapterUpdated: saveSoon.restart()
+        onLoaded: root.ready = true
         onLoadFailed: error => {
             if (error === FileViewError.FileNotFound)
                 saveSoon.restart();
+            root.ready = true;
         }
 
         JsonAdapter {
@@ -173,6 +177,7 @@ Singleton {
             property string language: "auto"
             property int pagesShown: 8
             property string lockImage: ""
+            property bool welcome: true
             property string lockScene: "hand"
             property string lockWith: "etea"
             property bool lockFingerprint: true
