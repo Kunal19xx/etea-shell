@@ -335,6 +335,7 @@ Scope {
                 anchors.fill: parent
                 lock: root
                 main: surface.screen?.name === root.mainScreen
+                onClaimed: root.mainScreen = surface.screen?.name ?? root.mainScreen
             }
         }
     }

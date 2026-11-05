@@ -8,8 +8,8 @@ import qs.modules.bar
 import qs.modules.stage
 import qs.services
 
-// What one screen of the lock shows. Only the main screen listens to the keyboard and
-// shows the scene's figure; the others keep the landscape and the scene's sky.
+// What one screen of the lock shows. Only the main screen, the one you type on, shows the
+// scene's figure; the others keep the landscape and the scene's sky.
 //
 // The second page draws one of the scenes in scenes/, picked in Settings. A scene is an
 // Item given `host`, this LockScene, and reads from it: host.lock (stars typed, revealed,
@@ -22,6 +22,8 @@ Item {
     required property var lock
     property bool main: false
     property bool preview: false
+
+    signal claimed() // a key reached this screen, so it becomes the one you type on
 
     readonly property real unit: height
     // Where the lock folds into when it opens, the scene says where its newest star is
@@ -375,11 +377,14 @@ Item {
     }
 
     // The keyboard. Escape leaves the preview, and on the real lock goes back to the landscape.
+    // Every screen listens: after sleep, Hyprland can hand the keys to another one.
     Item {
         anchors.fill: parent
-        focus: root.main
+        focus: true
         Keys.onPressed: event => {
             event.accepted = true;
+            if (!root.main)
+                root.claimed();
             if (event.key === Qt.Key_CapsLock)
                 capsCheck.restart();
             if (!root.lock.revealed && event.key !== Qt.Key_Escape)
@@ -393,10 +398,7 @@ Item {
             else if (event.text.length > 0 && event.text.charCodeAt(0) >= 32)
                 root.lock.type(event.text);
         }
-        Component.onCompleted: {
-            if (root.main)
-                forceActiveFocus();
-        }
+        Component.onCompleted: forceActiveFocus()
     }
 
     // Caps Lock only changes after the key has gone through
