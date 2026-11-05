@@ -24,6 +24,7 @@ ShellRoot {
     PageShortcuts {}
     Illumination {}
     Bar {}
+    TrayRecall {}
     BarMenus {}
     DeskMenu {}
     Launcher {}
