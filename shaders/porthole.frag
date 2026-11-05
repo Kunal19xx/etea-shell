@@ -87,6 +87,6 @@ void main() {
     float toPointer = length(px - pointer);
     color += tint.rgb * exp(-toPointer * toPointer / 16000.0) * 0.16 * hover;
 
-    color += (hash(floor(px)) - 0.5) * 0.028;
+    color += (hash(floor(gl_FragCoord.xy)) - 0.5) * 0.028; // per screen pixel, like the sky
     fragColor = vec4(color * alpha, alpha) * qt_Opacity;
 }

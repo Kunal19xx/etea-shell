@@ -31,7 +31,8 @@ void main() {
     float y = qt_TexCoord0.y;
     vec3 color = y < 0.62 ? mix(colorTop.rgb, colorMid.rgb, y / 0.62) : mix(colorMid.rgb, colorLow.rgb, min((y - 0.62) / 0.3, 1.0));
 
-    float n = mix(0.376, 0.627, hash(floor(qt_TexCoord0 * resolution)));
+    // One grain per screen pixel, so it stays even with fractional scaling
+    float n = mix(0.376, 0.627, hash(floor(gl_FragCoord.xy)));
     color = mix(color, overlay(color, n), grain) + n * 0.022;
 
     // Above the atmosphere the sky goes dark and the stars come out
