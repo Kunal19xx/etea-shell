@@ -6,7 +6,7 @@ import Quickshell.Io
 
 // Keeps ETEA up to date from the git clone it runs from, through scripts/update.sh. It only
 // asks GitHub when Settings › About is open or you press the button. Once the new files land,
-// Quickshell reloads the shell by itself.
+// it reloads the shell on the new version.
 Singleton {
     id: root
 
@@ -95,7 +95,10 @@ Singleton {
             root.behind = 0;
             root.changes = [];
             root.state = "updated";
-            root.refresh();
+            // Quickshell reloads on its own as files change, but that can land halfway through
+            // the merge, before a new folder is there, and leave the old version running.
+            // Everything is in place now, so reload once more.
+            Quickshell.reload(false);
         }
     }
 

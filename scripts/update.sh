@@ -2,7 +2,7 @@
 # Keeps ETEA up to date from the git clone it runs from.
 #   update.sh info    "commit|date|branch" of what's running
 #   update.sh check   how many new commits there are, then their titles
-#   update.sh apply   moves to the latest version; Quickshell reloads on its own
+#   update.sh apply   moves to the latest version; the Updater service then reloads the shell
 # Exits 2 when the server can't be reached, 3 when this isn't a clone that follows one,
 # 4 when files were changed here by hand, 5 when the history went elsewhere.
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 3
