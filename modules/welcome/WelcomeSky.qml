@@ -282,7 +282,7 @@ Item {
 
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: Lang.t("Bienvenue sur {0}", Theme.planet.name)
+            text: Lang.t("Bienvenue sur ETEA Shell")
             color: Theme.text
             font.family: Theme.font
             font.pixelSize: 30
