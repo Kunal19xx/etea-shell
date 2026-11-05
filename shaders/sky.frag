@@ -32,7 +32,7 @@ void main() {
     vec3 color = y < 0.62 ? mix(colorTop.rgb, colorMid.rgb, y / 0.62) : mix(colorMid.rgb, colorLow.rgb, min((y - 0.62) / 0.3, 1.0));
 
     float n = mix(0.376, 0.627, hash(floor(qt_TexCoord0 * resolution)));
-    color = mix(color, overlay(color, n), grain) + n * 0.022;
+    color = mix(color, overlay(color, n), grain);
 
     // Above the atmosphere the sky goes dark and the stars come out
     vec2 cell = floor(qt_TexCoord0 * resolution / 2.0);
