@@ -48,8 +48,8 @@ Item {
         opacity: Math.min(1, Planet.altitude * 2.5)
         anchors.fill: parent
         anchors.margins: Theme.windowGapOuter
-        anchors.topMargin: (Theme.barOnTop ? Theme.barReserve : 0) + Theme.windowGapOuter
-        anchors.bottomMargin: (Theme.barOnTop ? 0 : Theme.barReserve) + Theme.windowGapOuter
+        anchors.topMargin: (Theme.barOnTop ? Theme.barSpace : 0) + Theme.windowGapOuter
+        anchors.bottomMargin: (Theme.barOnTop ? 0 : Theme.barSpace) + Theme.windowGapOuter
         radius: Theme.windowRadius
         color: Qt.alpha(Theme.windowLit, 0.04)
         border.width: 6

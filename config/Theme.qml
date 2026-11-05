@@ -34,6 +34,7 @@ Singleton {
     readonly property int barSide: 20
     readonly property int barGlowRoom: 32
     readonly property int barReserve: barGap + barHeight // the strip of screen the bar keeps for itself
+    readonly property int barSpace: Config.barHide === "always" ? 0 : barReserve // what windows leave it, nothing when it hides
     readonly property int barSpacing: Math.round(12 * barScale)
     readonly property int iconSize: Math.round(21 * barScale)
 

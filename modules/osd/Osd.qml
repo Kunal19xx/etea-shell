@@ -88,7 +88,7 @@ Scope {
         implicitHeight: 104
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "etea:osd"
-        margins.bottom: 54 + (Theme.barOnTop ? 0 : Theme.barReserve)
+        margins.bottom: 54 + (Theme.barOnTop ? 0 : Theme.barSpace)
 
         anchors {
             bottom: true

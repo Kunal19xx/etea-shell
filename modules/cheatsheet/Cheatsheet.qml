@@ -200,7 +200,7 @@ Scope {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.topMargin: Theme.barReserve + 30
+            anchors.topMargin: Theme.barSpace + 30
             anchors.bottomMargin: 30
             // The scrolling area reaches a little past the content, so the cards' stars and
             // ink have room; the margins give that room back to keep everything in place

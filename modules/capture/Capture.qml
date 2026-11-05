@@ -268,7 +268,7 @@ Scope {
         // Photo or video, and for a video whether the sound goes with it
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
-            y: Theme.barOnTop ? Theme.barReserve + 14 : 28
+            y: Theme.barOnTop ? Theme.barSpace + 14 : 28
             spacing: 8
 
             Repeater {
