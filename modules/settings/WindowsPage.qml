@@ -78,15 +78,6 @@ ColumnLayout {
         onMoved: value => Config.windowGapOuter = Math.round(value)
     }
 
-    SettingSlider {
-        label: Lang.t("Espace entre les fenêtres")
-        value: Config.windowGapInner
-        minimum: 0
-        maximum: 30
-        unit: " px"
-        onMoved: value => Config.windowGapInner = Math.round(value)
-    }
-
     SettingSection {
         text: Lang.t("Verre")
     }
