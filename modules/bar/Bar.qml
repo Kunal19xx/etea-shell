@@ -7,7 +7,7 @@ import qs.services
 
 // The bar, at the top or the bottom. Config.barLayout says what goes on each end and in the middle.
 Variants {
-    model: Quickshell.screens
+    model: Config.ready ? Quickshell.screens : []
 
     PanelWindow {
         id: bar
