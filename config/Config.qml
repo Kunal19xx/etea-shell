@@ -73,6 +73,7 @@ Singleton {
     property alias traceWidth: saved.traceWidth
     property alias traceSpacing: saved.traceSpacing
     property alias windowGapOuter: saved.windowGapOuter
+    property alias windowGapInner: saved.windowGapInner
 
     property alias language: saved.language // "auto" follows the system, or a code from Lang.languages
     property alias pagesShown: saved.pagesShown
@@ -173,6 +174,7 @@ Singleton {
             property int traceWidth: 2
             property int traceSpacing: 420
             property int windowGapOuter: 12
+            property int windowGapInner: 5
 
             property string language: "auto"
             property int pagesShown: 8
