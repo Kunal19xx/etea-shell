@@ -67,7 +67,7 @@ Singleton {
     // Hyprland draws the rounded frame, so it never lags behind the window
     readonly property int windowRadius: 22
     readonly property int windowGapOuter: Config.windowGapOuter // breathing room so the glow shows all the way around
-    readonly property int windowGapInner: 5
+    readonly property int windowGapInner: Config.windowGapInner
     readonly property int traceWidth: Config.traceWidth // thickness of the frame
     readonly property real traceLine: 0.7
 
