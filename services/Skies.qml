@@ -124,12 +124,30 @@ Singleton {
             list.push({ path: sky, mtime: "", month: "" });
         for (const picture of Pictures.pictures)
             list.push({ path: picture.path, mtime: picture.mtime, month: monthOf(picture.mtime) });
+        // Searching online, then what it found, just before the way out to another folder
+        list.push({ special: "online" });
+        for (const result of Online.results)
+            list.push(result);
         list.push({ special: "elsewhere" });
         return list;
     }
 
     function keyOf(item) {
-        return item ? item.path ?? item.special : "";
+        return item ? item.path ?? (item.remote ? `${item.source}:${item.id}` : item.special) : "";
+    }
+
+    // The belt built again, the moon at the top kept there, or another one brought up
+    function rebuild(bringUp) {
+        const fresh = build();
+        if (fresh.length === items.length && fresh.every((item, i) => keyOf(item) === keyOf(items[i])))
+            return;
+        const here = bringUp ?? keyOf(items[zenith]);
+        const offset = bringUp ? 0 : scroll - Math.round(scroll);
+        holdTurn();
+        items = fresh;
+        const found = items.findIndex(item => keyOf(item) === here);
+        shift = 0;
+        scroll = (found < 0 ? wearing : found) + offset;
     }
 
     // What a moon is called: its file's name, tidied, or what it stands for
@@ -140,6 +158,10 @@ Singleton {
             return planet.name;
         if (item.special === "elsewhere")
             return Lang.t("Autre dossier…");
+        if (item.special === "online")
+            return Online.busy ? Lang.t("On cherche…") : Online.query ? `« ${Online.query} »` : Lang.t("Chercher en ligne…");
+        if (item.remote)
+            return `${item.source === "pixabay" ? "Pixabay" : "Wallhaven"} · ${item.width} × ${item.height}${item.author ? " · " + item.author : ""}`;
         const name = item.path.split("/").pop().replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
         return name.length > 34 ? name.slice(0, 33).trim() + "…" : name;
     }
@@ -164,8 +186,10 @@ Singleton {
     function paletteOf(item) {
         if (!item)
             return null;
-        if (item === items[wearing] || item.special === "elsewhere")
+        if (item === items[wearing] || item.special === "elsewhere" || item.special === "online")
             return planet;
+        if (item.remote)
+            return item.palette;
         if (item.special === "world")
             return Planets.original(planet.id) ?? planet;
         return Palettes.of({ path: item.path, mtime: item.mtime })?.palette ?? null;
@@ -175,6 +199,8 @@ Singleton {
     function dominantOf(item) {
         if (item?.path && item.mtime)
             return Palettes.of({ path: item.path, mtime: item.mtime })?.dominant ?? String(planet.skyMid);
+        if (item?.remote)
+            return item.colors[0] ?? String(planet.skyMid);
         return String(paletteOf(item)?.skyMid ?? planet.skyMid);
     }
 
@@ -263,10 +289,10 @@ Singleton {
     function lensOf(index) {
         const item = items[index];
         return {
-            path: copyOf(item) || (item?.path ?? ""),
-            thumb: item?.path ? Pictures.thumb(Pictures.pictures.find(p => p.path === item.path) ?? item, 0) : "",
+            path: copyOf(item) || (item?.path ?? item?.thumb ?? ""),
+            thumb: item?.path ? Pictures.thumb(Pictures.pictures.find(p => p.path === item.path) ?? item, 0) : item?.thumb ?? "",
             palette: paletteOf(item),
-            painted: !item?.path,
+            painted: !item?.path && !item?.remote,
             seed: seedOf(item)
         };
     }
@@ -277,7 +303,7 @@ Singleton {
         if (!Planet.inSkies || landing || leaving)
             return;
         const item = items[zenith];
-        if (on && (!item || item.special === "elsewhere"))
+        if (on && (!item || item.special === "elsewhere" || item.special === "online"))
             return;
         if (on) {
             holdTurn();
@@ -293,7 +319,7 @@ Singleton {
 
     // Pulling the moon at the top down by hand looks at it, the camera following 1:1
     function pullStart() {
-        if (!Planet.inSkies || landing || leaving || !items[zenith] || items[zenith].special === "elsewhere")
+        if (!Planet.inSkies || landing || leaving || !items[zenith] || items[zenith].special === "elsewhere" || items[zenith].special === "online")
             return false;
         holdTurn();
         chosen = zenith;
@@ -319,6 +345,15 @@ Singleton {
             return;
         if (item.special === "elsewhere") {
             browse();
+            return;
+        }
+        if (item.special === "online") {
+            Online.search(Online.query);
+            return;
+        }
+        // From elsewhere: down into the folder first, then it lands as any picture would
+        if (item.remote) {
+            fetchThenChoose(item);
             return;
         }
         if (index === wearing && role === "sky") {
@@ -361,6 +396,22 @@ Singleton {
             land();
         else
             copyWait.restart();
+    }
+
+    function fetchThenChoose(item) {
+        Online.download(item, (path, mtime) => {
+            const at = items.indexOf(item);
+            if (at < 0 || !open)
+                return;
+            // It takes its moon's place and lands; the belt is only built again next time
+            const next = items.slice();
+            next[at] = { path: path, mtime: mtime, month: monthOf(mtime) };
+            items = next;
+            // Turned away while it came down: it lands from where its moon is now
+            choose(at, along(at, zenith));
+            Online.results = Online.results.filter(result => result !== item);
+            Pictures.refresh();
+        });
     }
 
     function land() {
@@ -458,6 +509,11 @@ Singleton {
     property string typed: ""
 
     function type(text) {
+        // At the online moon, typing is the search
+        if (items[zenith]?.special === "online") {
+            Online.query += text;
+            return;
+        }
         typed = (typing.running ? typed : "") + text.toLowerCase();
         typing.restart();
         const found = items.findIndex(item => nameOf(item).toLowerCase().startsWith(typed));
@@ -516,21 +572,27 @@ Singleton {
     Connections {
         target: Pictures
 
+        // Most of the time nothing came in or went, and the belt stays as it is
         function onPicturesChanged() {
-            if (!root.open)
-                return;
-            // Most of the time nothing came in or went: leave the belt as it is, turning or not
-            const fresh = root.build();
-            if (fresh.length === root.items.length && fresh.every((item, i) => root.keyOf(item) === root.keyOf(root.items[i])))
-                return;
-            const here = root.keyOf(root.items[root.zenith]);
-            const offset = root.scroll - Math.round(root.scroll);
-            root.holdTurn();
-            root.items = fresh;
-            const found = root.items.findIndex(item => root.keyOf(item) === here);
-            root.shift = 0;
-            root.scroll = (found < 0 ? root.wearing : found) + offset;
+            if (root.open && !root.landing && !root.homing && !root.leaving)
+                root.rebuild();
         }
+    }
+
+    // What the search found comes up at the top, its first moon
+    Connections {
+        target: Online
+
+        function onResultsChanged() {
+            if (root.open && !root.landing && !root.homing && !root.leaving)
+                root.rebuild(Online.results.length ? root.keyOf(Online.results[0]) : undefined);
+        }
+    }
+
+    // Backspace at the online moon takes a letter off the search
+    function unType() {
+        if (items[zenith]?.special === "online")
+            Online.query = Online.query.slice(0, -1);
     }
 
     Connections {

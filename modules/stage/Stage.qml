@@ -146,9 +146,12 @@ Variants {
                 Skies.flyTo(Skies.wearing);
             else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
                 Skies.choose();
-            else if (event.key === Qt.Key_Space && !event.isAutoRepeat)
+            else if (event.key === Qt.Key_Space && !event.isAutoRepeat && Skies.items[Skies.zenith]?.special !== "online")
                 Skies.look(true);
-            else if (event.text.length === 1 && event.text.trim() !== "" && !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)))
+            else if (event.key === Qt.Key_Backspace)
+                Skies.unType();
+            // Spaces only count in a search, where they part the words
+            else if (event.text.length === 1 && (event.text.trim() !== "" || Skies.items[Skies.zenith]?.special === "online") && !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)))
                 Skies.type(event.text);
         }
 

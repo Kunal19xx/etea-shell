@@ -142,6 +142,11 @@ Scope {
             Skies.leave();
         }
 
+        // Searches online, Wallhaven or Pixabay as Settings say, and brings up what it finds
+        function search(text: string): void {
+            Online.search(text);
+        }
+
         // A number of moons along, as the arrow keys do
         function turn(moons: int): void {
             Skies.step(moons);

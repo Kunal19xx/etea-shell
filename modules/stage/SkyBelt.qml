@@ -265,7 +265,10 @@ Item {
             x: (root.width - implicitWidth) / 2
             y: root.captionTop - 16 * root.unit - baselineOffset
             visible: words.entry?.special !== "elsewhere"
-            text: yours ? Lang.t("Ton ciel") : Lang.t("Entrée pour en faire ton ciel · Espace pour regarder")
+            // At the search, what to do or what went wrong; on a sky found online, it comes down first
+            text: words.entry?.special === "online" ? Online.error || (Online.busy ? "" : Lang.t("Tape ta recherche · Entrée pour chercher sur {0}", Online.sourceName))
+                : words.entry?.remote ? (Online.downloading === words.entry.id ? Lang.t("Il descend…") : Lang.t("Entrée pour le télécharger et en faire ton ciel · Espace pour regarder"))
+                : yours ? Lang.t("Ton ciel") : Lang.t("Entrée pour en faire ton ciel · Espace pour regarder")
             color: yours ? Qt.alpha(Skies.planet.light, 0.95) : Qt.alpha(Theme.skyInk, 0.55)
             font.family: Theme.font
             font.pixelSize: Math.round(13 * root.unit)
