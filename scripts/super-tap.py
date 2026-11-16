@@ -5,8 +5,10 @@
 # other key, click or scroll in between. Nothing is kept or sent anywhere else.
 #   super-tap.py <shell path>
 
+import ctypes
 import os
 import selectors
+import signal
 import subprocess
 import sys
 import time
@@ -36,12 +38,20 @@ def devices():
 
 
 def main():
+    # Gone with the shell: the kernel ends us when it dies, and we check it's still there
+    parent = os.getppid()
+    try:
+        ctypes.CDLL("libc.so.6", use_errno=True).prctl(1, signal.SIGTERM)  # PR_SET_PDEATHSIG
+    except OSError:
+        pass
     selector = selectors.DefaultSelector()
     watched = {}
     pressed_at = None
     spoiled = False
     last_scan = 0.0
     while True:
+        if os.getppid() != parent:
+            return
         # Devices plugged in later are picked up every few seconds
         if time.monotonic() - last_scan > 5:
             last_scan = time.monotonic()
