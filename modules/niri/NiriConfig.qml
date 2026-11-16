@@ -19,6 +19,7 @@ Scope {
         ["Mod+V", "Clipboard history", "clipboard toggle"],
         ["Mod+Shift+S", "Capture (Tab for video)", "capture toggle"],
         ["Mod+I", "Settings", "settings toggle"],
+        ["Ctrl+Mod+T", "Wallpaper", "skies open"],
         ["Mod+Escape", "Session menu", "session toggle"],
         ["Ctrl+Alt+Delete", "Session menu", "session toggle"]
     ]

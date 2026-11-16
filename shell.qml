@@ -20,18 +20,18 @@ import qs.modules.welcome
 import qs.services
 
 // Where it all starts: the world in the back, the stage over the windows, the bar on top.
-// On niri ETEA is only the decoration, so the stage and Hyprland's window looks stay out.
+// On niri ETEA is only the decoration: Hyprland's window looks stay out.
 ShellRoot {
     Background {}
+
+    // On niri the stage stays only for the belt of skies: nothing there turns the planet
+    Stage {}
+    PageShortcuts {}
 
     LazyLoader {
         active: !Compositor.niri
 
-        Scope {
-            Stage {}
-            PageShortcuts {}
-            Illumination {}
-        }
+        Illumination {}
     }
 
     // And on niri, the shortcuts it hands to the shell
