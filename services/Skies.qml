@@ -73,7 +73,7 @@ Singleton {
     // shows is then exactly what the background will load, and moving the original
     // can't empty the sky. { path: copy } for the copies made so far.
     property var copies: ({})
-    readonly property var screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+    readonly property var screen: Compositor.focusedScreen
     readonly property size screenSize: Qt.size(screen?.width ?? 1920, screen?.height ?? 1080)
     readonly property var largest: Quickshell.screens.reduce((best, s) => s.width * s.height > best.width * best.height ? s : best, Quickshell.screens[0])
     // Your sky's moon inks its ring and star once it has taken over from the folding sky

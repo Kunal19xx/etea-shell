@@ -175,7 +175,7 @@ Scope {
             return place >= 0 && place < Config.pages ? Planet.groupStart + place : 0;
         }
 
-        screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+        screen: Compositor.focusedScreen
         visible: shown > 0.01
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore

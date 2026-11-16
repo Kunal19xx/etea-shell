@@ -142,7 +142,7 @@ Scope {
     PanelWindow {
         id: panel
 
-        screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+        screen: Compositor.focusedScreen
         visible: root.open
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore

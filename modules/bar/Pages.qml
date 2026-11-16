@@ -14,7 +14,7 @@ Row {
 
     // Tell the shell where the pages are, so stars can fly to them and apps be dropped on them
     function publish() {
-        if (monitorName !== (Hyprland.focusedMonitor?.name ?? monitorName))
+        if (monitorName !== (Compositor.focusedOutput || monitorName))
             return;
         const at = mapToItem(null, 0, 0);
         Planet.pagesArea = Qt.rect(at.x, at.y + windowY, width, height);
@@ -27,7 +27,7 @@ Row {
     onWindowYChanged: Qt.callLater(publish)
     Component.onCompleted: Qt.callLater(publish)
     Component.onDestruction: {
-        if (monitorName === (Hyprland.focusedMonitor?.name ?? monitorName))
+        if (monitorName === (Compositor.focusedOutput || monitorName))
             Planet.pagesArea = Qt.rect(0, 0, 0, 0);
     }
 

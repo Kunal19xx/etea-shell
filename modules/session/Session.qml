@@ -62,7 +62,7 @@ Scope {
             chosen = (chosen + step + actions.length) % actions.length;
         }
 
-        screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+        screen: Compositor.focusedScreen
         visible: shown > 0.01
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore

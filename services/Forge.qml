@@ -2,7 +2,6 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 import qs.config
 
@@ -194,7 +193,7 @@ Singleton {
     Image {
         id: preload
 
-        readonly property var screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+        readonly property var screen: Compositor.focusedScreen
 
         visible: false
         asynchronous: true

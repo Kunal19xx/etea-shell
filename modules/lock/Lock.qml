@@ -38,7 +38,7 @@ Scope {
     signal succeeded()
 
     function begin() {
-        mainScreen = Hyprland.focusedMonitor?.name ?? Quickshell.screens[0]?.name ?? "";
+        mainScreen = Compositor.focusedOutput || Quickshell.screens[0]?.name || "";
         typed = "";
         stars = 0;
         revealed = false;

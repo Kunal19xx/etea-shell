@@ -26,7 +26,7 @@ Scope {
         // Room around the card for the stars and ink that spill past its edge
         readonly property int room: 16
 
-        screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+        screen: Compositor.focusedScreen
         visible: root.open || reveal > 0
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
