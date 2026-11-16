@@ -115,7 +115,8 @@ Singleton {
             ls "$HOME/.cache/thumbnails/large" 2>/dev/null | sed -n 's/[.]png$//p' | tr '\n' ' '; echo
             ls "$HOME/.cache/thumbnails/x-large" 2>/dev/null | sed -n 's/[.]png$//p' | tr '\n' ' '; echo
             ls "$1" | sed -n 's/[.]jpg$//p' | tr '\n' ' '; echo
-            find "$dir" -maxdepth 1 -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \\) -printf '%T@\\t%p\\n' 2>/dev/null | sort -rn`, "sh", root.thumbs]
+            # Empty files, like a download that failed, are no pictures
+            find "$dir" -maxdepth 1 -type f -size +0c \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \\) -printf '%T@\\t%p\\n' 2>/dev/null | sort -rn`, "sh", root.thumbs]
         stdout: StdioCollector {
             onStreamFinished: {
                 const [folder, system, larger, own, ...lines] = text.split("\n");
