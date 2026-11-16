@@ -32,10 +32,11 @@ Scope {
         return `#${byte(color.r)}${byte(color.g)}${byte(color.b)}${byte(alpha)}`;
     }
 
-    // Every window gets the same thin line of the world's light: no focus look on niri.
-    // niri's gaps are the inner ones, the struts add what the outer ones have beyond.
+    // Every window gets the same thin line, from the world's light to the middle of its
+    // sky, laid across the whole workspace so it reads as one light over all the windows:
+    // no focus look on niri. niri's gaps are the inner ones, the struts add the rest.
     readonly property string looks: {
-        const line = hex(Theme.windowLit, Theme.traceLine);
+        const line = `from="${hex(Theme.windowLit, Theme.traceLine)}" to="${hex(Theme.skyMid, Theme.traceLine)}" angle=135 relative-to="workspace-view"`;
         const edge = Math.max(0, Theme.windowGapOuter - Theme.windowGapInner);
         return `layout {
     gaps ${Theme.windowGapInner}
@@ -51,9 +52,9 @@ Scope {
     border {
         on
         width ${Theme.traceWidth}
-        active-color "${line}"
-        inactive-color "${line}"
-        urgent-color "${line}"
+        active-gradient ${line}
+        inactive-gradient ${line}
+        urgent-gradient ${line}
     }
 }
 
