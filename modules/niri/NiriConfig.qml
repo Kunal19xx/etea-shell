@@ -71,6 +71,13 @@ animations {
 ${opening}
 "
     }
+    window-close {
+        duration-ms ${Theme.closeFold + 160}
+        curve "linear"
+        custom-shader r"
+${closing}
+"
+    }
 }
 `;
     }
@@ -78,24 +85,17 @@ ${opening}
     // A window opens the way it does on Hyprland: ETEA's star is born in the world's light
     // where the window will be, then grows rounder into the window's shape, the window
     // showing inside it behind a thin rim of light. Flat, each edge over one pixel.
-    readonly property string opening: {
+    // The drawing both share: ETEA's star of a given size, t of the way to being the window.
+    // On the way it grows rounder (the exponent climbs from the star's 0.62), wider and
+    // stretched from square to the window's own proportions, while its light drains away
+    // and the window shows through, behind a rim that thins out.
+    readonly property string starToWindow: {
         const light = Theme.windowLit;
-        const rgb = `vec3(${light.r.toFixed(3)}, ${light.g.toFixed(3)}, ${light.b.toFixed(3)})`;
-        return `vec4 open_color(vec3 coords_geo, vec3 size_geo) {
-    vec3 light = ${rgb};
-    float p = niri_clamped_progress;
+        return `vec4 etea_star_window(vec3 coords_geo, vec3 size_geo, float star_size, float t) {
+    vec3 light = vec3(${light.r.toFixed(3)}, ${light.g.toFixed(3)}, ${light.b.toFixed(3)});
     vec2 half_size = size_geo.xy * 0.5;
     vec2 px = (coords_geo.xy - vec2(0.5)) * size_geo.xy;
     float shortest = min(half_size.x, half_size.y);
-
-    // The star, born a little too big, then settling, for the first third
-    float born = clamp(p / 0.32, 0.0, 1.0);
-    float star_size = 26.0 * born * (1.0 + 0.35 * sin(born * 3.14159));
-
-    // Then it opens: rounder (the exponent climbs from the star's 0.62), wider, and
-    // stretched from square to the window's own proportions
-    float t = clamp((p - 0.32) / 0.68, 0.0, 1.0);
-    t = t * t * (3.0 - 2.0 * t);
     float bend = mix(0.62, 8.0, t * t);
     vec2 scale = mix(vec2(shortest), half_size, t);
     vec2 q = abs(px) / scale;
@@ -112,6 +112,26 @@ ${opening}
     return mix(window, vec4(light, 1.0) * inside, max(fill, rim));
 }`;
     }
+
+    // Opening: the star is born a little too big and settles, then opens into the window
+    readonly property string opening: `${starToWindow}
+
+vec4 open_color(vec3 coords_geo, vec3 size_geo) {
+    float p = niri_clamped_progress;
+    float born = clamp(p / 0.32, 0.0, 1.0);
+    float t = clamp((p - 0.32) / 0.68, 0.0, 1.0);
+    return etea_star_window(coords_geo, size_geo, 26.0 * born * (1.0 + 0.35 * sin(born * 3.14159)), t * t * (3.0 - 2.0 * t));
+}`
+
+    // Closing: the window folds back into its star, which swells a touch and goes out
+    readonly property string closing: `${starToWindow}
+
+vec4 close_color(vec3 coords_geo, vec3 size_geo) {
+    float p = niri_clamped_progress;
+    float t = 1.0 - clamp(p / 0.68, 0.0, 1.0);
+    float gone = clamp((p - 0.68) / 0.32, 0.0, 1.0);
+    return etea_star_window(coords_geo, size_geo, 26.0 * (1.0 - gone * gone) * (1.0 + 0.25 * sin(gone * 3.14159)), t * t * (3.0 - 2.0 * t));
+}`
 
     readonly property string text: {
         const shell = Quickshell.shellPath("").replace(/\/$/, "");
