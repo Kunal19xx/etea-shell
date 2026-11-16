@@ -9,6 +9,7 @@ import qs.modules.bar.menus
 import qs.modules.launcher
 import qs.modules.notifications
 import qs.modules.lock
+import qs.modules.niri
 import qs.modules.osd
 import qs.modules.panels
 import qs.modules.polkit
@@ -31,6 +32,13 @@ ShellRoot {
             PageShortcuts {}
             Illumination {}
         }
+    }
+
+    // And on niri, the shortcuts it hands to the shell
+    LazyLoader {
+        active: Compositor.niri
+
+        NiriConfig {}
     }
     TerminalColors {}
     Bar {}
