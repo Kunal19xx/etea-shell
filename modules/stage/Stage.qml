@@ -296,17 +296,27 @@ Variants {
             }
         }
 
-        WindowFrames {
+        // Both follow Hyprland's windows, so on niri, where the stage is only there for the
+        // belt of skies, they aren't made at all: even idle, the birth's screen capture
+        // stays bound to the output
+        Loader {
             anchors.fill: parent
-            screenX: stage.modelData.x
-            screenY: stage.modelData.y
-            active: stage.focused && Planet.phase !== Planet.Phase.Spinning && Planet.altitude === 0
-        }
+            active: !Compositor.niri
 
-        WindowBirth {
-            anchors.fill: parent
-            output: stage.modelData
-            active: stage.focused
+            sourceComponent: Item {
+                WindowFrames {
+                    anchors.fill: parent
+                    screenX: stage.modelData.x
+                    screenY: stage.modelData.y
+                    active: stage.focused && Planet.phase !== Planet.Phase.Spinning && Planet.altitude === 0
+                }
+
+                WindowBirth {
+                    anchors.fill: parent
+                    output: stage.modelData
+                    active: stage.focused
+                }
+            }
         }
 
         WindowExit {

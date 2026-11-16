@@ -11,6 +11,12 @@ import qs.services
 // A right click on the desktop. On a widget: its size, its options, and a way to put it
 // away. On the empty sky: the widgets that aren't out yet.
 Scope {
+    // niri has no focus grab: a click outside lands on this veil instead of the sky
+    ClickAway {
+        active: Desk.menuFor !== ""
+        onClicked: Desk.menuFor = ""
+    }
+
     PanelWindow {
         id: panel
 

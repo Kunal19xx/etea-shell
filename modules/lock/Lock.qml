@@ -310,14 +310,15 @@ Scope {
         onTriggered: root.now = Date.now()
     }
 
+    // Hyprland says it; on niri the keyboard's own light does
     Process {
         id: caps
 
-        command: ["hyprctl", "devices", "-j"]
+        command: Compositor.niri ? ["sh", "-c", "cat /sys/class/leds/*::capslock/brightness 2>/dev/null"] : ["hyprctl", "devices", "-j"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    root.capsLock = JSON.parse(text).keyboards.some(keyboard => keyboard.capsLock);
+                    root.capsLock = Compositor.niri ? text.split("\n").some(line => Number(line) > 0) : JSON.parse(text).keyboards.some(keyboard => keyboard.capsLock);
                 } catch (error) {}
             }
         }
