@@ -20,7 +20,7 @@ Variants {
         readonly property real windowY: Theme.barOnTop ? 0 : (modelData?.height ?? 0) - implicitHeight
 
         // Out of the way, always or only over a fullscreen window, until the mouse comes for it
-        readonly property bool fullscreenHere: Hyprland.monitorFor(modelData)?.activeWorkspace?.hasFullscreen ?? false
+        readonly property bool fullscreenHere: Compositor.niri ? Compositor.fullscreenOn(modelData.name) : Hyprland.monitorFor(modelData)?.activeWorkspace?.hasFullscreen ?? false
         readonly property bool hides: Config.barHide === "always" || (Config.barHide === "fullscreen" && fullscreenHere)
         readonly property bool wanted: !hides || hover.hovered || Menus.open !== "" || Menus.leftOpen || Menus.rightOpen
         property bool shown: !hides

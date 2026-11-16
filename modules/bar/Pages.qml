@@ -52,15 +52,33 @@ Row {
     }
 
     Connections {
-        target: Hyprland
+        target: Compositor
 
-        function onFocusedMonitorChanged() {
+        function onFocusedOutputChanged() {
             Qt.callLater(root.publish);
         }
     }
 
+    // On niri, its own workspaces, as many as it has on this output
     Repeater {
-        model: Config.pages
+        model: Compositor.niri ? Compositor.workspacesOn(root.monitorName) : []
+
+        Item {
+            required property var modelData
+
+            implicitWidth: Theme.pageWidth
+            implicitHeight: Theme.barHeight
+
+            PageConstellation {
+                pageId: modelData.idx
+                niriWorkspace: modelData.id
+                active: modelData.is_active
+            }
+        }
+    }
+
+    Repeater {
+        model: Compositor.niri ? 0 : Config.pages
 
         Item {
             id: cell

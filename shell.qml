@@ -16,13 +16,22 @@ import qs.modules.session
 import qs.modules.settings
 import qs.modules.stage
 import qs.modules.welcome
+import qs.services
 
 // Where it all starts: the world in the back, the stage over the windows, the bar on top.
+// On niri ETEA is only the decoration, so the stage and Hyprland's window looks stay out.
 ShellRoot {
     Background {}
-    Stage {}
-    PageShortcuts {}
-    Illumination {}
+
+    LazyLoader {
+        active: !Compositor.niri
+
+        Scope {
+            Stage {}
+            PageShortcuts {}
+            Illumination {}
+        }
+    }
     TerminalColors {}
     Bar {}
     TrayRecall {}
