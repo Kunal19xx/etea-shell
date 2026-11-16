@@ -18,6 +18,11 @@ Scope {
         }
     }
 
+    ClickAway {
+        active: Menus.open !== "" && !Menus.captureOpen
+        onClicked: Menus.close()
+    }
+
     PanelWindow {
         id: panel
 
