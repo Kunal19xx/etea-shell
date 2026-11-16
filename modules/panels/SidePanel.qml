@@ -19,6 +19,11 @@ Scope {
 
     signal closeRequested()
 
+    ClickAway {
+        active: root.open && !Menus.captureOpen
+        onClicked: root.closeRequested()
+    }
+
     PanelWindow {
         id: window
 
@@ -26,12 +31,13 @@ Scope {
         // Room around the card for the stars and ink that spill past its edge
         readonly property int room: 16
 
-        screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+        screen: Compositor.focusedScreen
         visible: root.open || reveal > 0
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         implicitWidth: Theme.panelWidth + Theme.barSide + room
-        WlrLayershell.layer: WlrLayer.Top
+        // Over the click-away veil on niri
+        WlrLayershell.layer: Compositor.niri ? WlrLayer.Overlay : WlrLayer.Top
         WlrLayershell.namespace: `etea:panel-${root.side}`
         WlrLayershell.keyboardFocus: root.open ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
         margins.top: Theme.barOnTop ? Theme.barReserve + 6 : 6

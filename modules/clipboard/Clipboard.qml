@@ -141,7 +141,7 @@ Scope {
 
         property real shown: root.open ? 1 : 0
 
-        screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+        screen: Compositor.focusedScreen
         visible: shown > 0.01
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore

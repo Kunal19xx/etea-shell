@@ -9,6 +9,7 @@ import qs.modules.bar.menus
 import qs.modules.launcher
 import qs.modules.notifications
 import qs.modules.lock
+import qs.modules.niri
 import qs.modules.osd
 import qs.modules.panels
 import qs.modules.polkit
@@ -16,13 +17,29 @@ import qs.modules.session
 import qs.modules.settings
 import qs.modules.stage
 import qs.modules.welcome
+import qs.services
 
 // Where it all starts: the world in the back, the stage over the windows, the bar on top.
+// On niri ETEA is only the decoration, so the stage and Hyprland's window looks stay out.
 ShellRoot {
     Background {}
-    Stage {}
-    PageShortcuts {}
-    Illumination {}
+
+    LazyLoader {
+        active: !Compositor.niri
+
+        Scope {
+            Stage {}
+            PageShortcuts {}
+            Illumination {}
+        }
+    }
+
+    // And on niri, the shortcuts it hands to the shell
+    LazyLoader {
+        active: Compositor.niri
+
+        NiriConfig {}
+    }
     TerminalColors {}
     Bar {}
     TrayRecall {}

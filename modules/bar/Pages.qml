@@ -14,7 +14,7 @@ Row {
 
     // Tell the shell where the pages are, so stars can fly to them and apps be dropped on them
     function publish() {
-        if (monitorName !== (Hyprland.focusedMonitor?.name ?? monitorName))
+        if (monitorName !== (Compositor.focusedOutput || monitorName))
             return;
         const at = mapToItem(null, 0, 0);
         Planet.pagesArea = Qt.rect(at.x, at.y + windowY, width, height);
@@ -27,7 +27,7 @@ Row {
     onWindowYChanged: Qt.callLater(publish)
     Component.onCompleted: Qt.callLater(publish)
     Component.onDestruction: {
-        if (monitorName === (Hyprland.focusedMonitor?.name ?? monitorName))
+        if (monitorName === (Compositor.focusedOutput || monitorName))
             Planet.pagesArea = Qt.rect(0, 0, 0, 0);
     }
 
@@ -52,15 +52,33 @@ Row {
     }
 
     Connections {
-        target: Hyprland
+        target: Compositor
 
-        function onFocusedMonitorChanged() {
+        function onFocusedOutputChanged() {
             Qt.callLater(root.publish);
         }
     }
 
+    // On niri, its own workspaces, as many as it has on this output
     Repeater {
-        model: Config.pages
+        model: Compositor.niri ? Compositor.workspacesOn(root.monitorName) : []
+
+        Item {
+            required property var modelData
+
+            implicitWidth: Theme.pageWidth
+            implicitHeight: Theme.barHeight
+
+            PageConstellation {
+                pageId: modelData.idx
+                niriWorkspace: modelData.id
+                active: modelData.is_active
+            }
+        }
+    }
+
+    Repeater {
+        model: Compositor.niri ? 0 : Config.pages
 
         Item {
             id: cell

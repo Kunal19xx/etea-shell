@@ -11,13 +11,14 @@ Item {
 
     required property int pageId
     property bool active: false
+    property int niriWorkspace: -1 // on niri, the workspace it stands for
 
     // Each page keeps its shape, so you end up recognising it
     readonly property var layout: {
         const shapes = [[[0.14, 0.62], [0.36, 0.3], [0.58, 0.68], [0.82, 0.34], [0.5, 0.92], [0.06, 0.2]], [[0.12, 0.3], [0.34, 0.7], [0.6, 0.28], [0.86, 0.64], [0.4, 0.08], [0.1, 0.84]], [[0.18, 0.74], [0.3, 0.28], [0.62, 0.52], [0.84, 0.2], [0.8, 0.82], [0.48, 0.9]]];
         return shapes[(pageId - 1) % shapes.length];
     }
-    readonly property var pageWindows: Hyprland.toplevels.values.filter(t => t.workspace?.id === pageId)
+    readonly property var pageWindows: Compositor.niri ? Compositor.windowsOn(niriWorkspace) : Hyprland.toplevels.values.filter(t => t.workspace?.id === pageId)
     readonly property int windows: Math.min(layout.length, pageWindows.length)
     property var hovered: null
     readonly property bool lit: active || mouse.containsMouse
@@ -120,7 +121,7 @@ Item {
     Row {
         id: label
 
-        readonly property var app: root.hovered ? DesktopEntries.heuristicLookup(root.hovered.lastIpcObject?.class ?? root.hovered.wayland?.appId ?? "") : null
+        readonly property var app: root.hovered ? DesktopEntries.heuristicLookup(root.hovered.lastIpcObject?.class ?? root.hovered.wayland?.appId ?? root.hovered.app_id ?? "") : null
 
         anchors.horizontalCenter: parent.horizontalCenter
         y: Theme.barOnTop ? parent.height + 2 : -height - 2
@@ -158,7 +159,7 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: Planet.request(root.pageId)
+        onClicked: Compositor.niri ? Compositor.niriAction(["focus-workspace", String(root.pageId)]) : Planet.request(root.pageId)
         onExited: root.hovered = null
 
         // The closest star wins, and you don't have to land exactly on it

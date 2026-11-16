@@ -2,7 +2,6 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 import qs.config
 
@@ -106,7 +105,7 @@ Singleton {
                 root.stop();
                 return;
             }
-            const output = Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0];
+            const output = Compositor.focusedScreen;
             root.start(`${output.x},${output.y} ${output.width}x${output.height}`, withSound);
         }
 

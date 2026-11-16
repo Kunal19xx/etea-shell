@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Wayland
 import qs.config
 import qs.services
@@ -39,7 +38,7 @@ Variants {
             target: Skies
 
             function onBackgroundWanted(path) {
-                if (Hyprland.focusedMonitor?.name === modelData.name)
+                if (Compositor.focusedOutput === modelData.name)
                     world.grabToImage(result => console.info(`ETEA background grab: ${result.saveToFile(path) ? path : "failed"}`));
             }
         }

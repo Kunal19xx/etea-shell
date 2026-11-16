@@ -134,8 +134,8 @@ Singleton {
             found.push({ kind: "sum", label: `= ${result}`, icon: asset("search"), value: String(result) });
 
         const windows = [];
-        for (const window of Hyprland.toplevels.values) {
-            const title = window.title ?? "", kind = window.lastIpcObject?.class ?? "";
+        for (const window of Compositor.niri ? Compositor.niriWindows : Hyprland.toplevels.values) {
+            const title = window.title ?? "", kind = window.lastIpcObject?.class ?? window.app_id ?? "";
             if (title.toLowerCase().includes(wanted) || kind.toLowerCase().includes(wanted)) {
                 // Without a class Hyprland can't say which app it is, and a guess goes badly wrong
                 const app = kind ? DesktopEntries.heuristicLookup(kind) : null;
@@ -176,6 +176,10 @@ Singleton {
             launch(entry.app);
             break;
         case "window":
+            if (Compositor.niri) {
+                Compositor.niriAction(["focus-window", "--id", String(entry.window.id)]);
+                break;
+            }
             Planet.request(entry.window.workspace?.id ?? Planet.current);
             Hyprland.dispatch(`hl.dsp.focus({ window = "address:0x${entry.window.address}" })`);
             break;
@@ -187,7 +191,10 @@ Singleton {
             Qt.openUrlExternally(`https://duckduckgo.com/?q=${encodeURIComponent(entry.query)}`);
             break;
         case "command":
-            Hyprland.dispatch(`hl.dsp.exec_cmd(${JSON.stringify(entry.command)})`);
+            if (Compositor.niri)
+                Quickshell.execDetached(["sh", "-c", entry.command]);
+            else
+                Hyprland.dispatch(`hl.dsp.exec_cmd(${JSON.stringify(entry.command)})`);
             break;
         }
     }

@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.Notifications
 import Quickshell.Wayland
@@ -43,7 +42,7 @@ Scope {
     PanelWindow {
         id: panel
 
-        screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+        screen: Compositor.focusedScreen
         visible: Notifs.popups.length > 0 && !Menus.rightOpen
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
