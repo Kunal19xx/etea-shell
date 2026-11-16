@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "Md5.js" as Md5
 
 // The colours of every picture, read once from its thumbnail and remembered between
 // sessions. Pictures are read one at a time through a queue, nearest wish first. Each gets a
@@ -25,7 +26,7 @@ Singleton {
     signal learnt(string path)
 
     function keyOf(picture) {
-        return Qt.md5(picture.path + picture.mtime);
+        return Md5.md5(picture.path + picture.mtime);
     }
 
     // { palette, dominant } if known; otherwise it's put first in line and arrives with `learnt`
