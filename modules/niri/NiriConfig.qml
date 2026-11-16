@@ -61,7 +61,55 @@ window-rule {
     geometry-corner-radius ${Theme.windowRadius}
     clip-to-geometry true
 }
+
+animations {
+    window-open {
+        duration-ms ${Theme.openSpark + Theme.openReveal}
+        curve "linear"
+        custom-shader r"
+${opening}
+"
+    }
+}
 `;
+    }
+
+    // A window opens the way it does on Hyprland: ETEA's star is born in the world's light
+    // where the window will be, then grows rounder into the window's shape, the window
+    // showing inside it behind a thin rim of light. Flat, each edge over one pixel.
+    readonly property string opening: {
+        const light = Theme.windowLit;
+        const rgb = `vec3(${light.r.toFixed(3)}, ${light.g.toFixed(3)}, ${light.b.toFixed(3)})`;
+        return `vec4 open_color(vec3 coords_geo, vec3 size_geo) {
+    vec3 light = ${rgb};
+    float p = niri_clamped_progress;
+    vec2 half_size = size_geo.xy * 0.5;
+    vec2 px = (coords_geo.xy - vec2(0.5)) * size_geo.xy;
+    float shortest = min(half_size.x, half_size.y);
+
+    // The star, born a little too big, then settling, for the first third
+    float born = clamp(p / 0.32, 0.0, 1.0);
+    float star_size = 26.0 * born * (1.0 + 0.35 * sin(born * 3.14159));
+
+    // Then it opens: rounder (the exponent climbs from the star's 0.62), wider, and
+    // stretched from square to the window's own proportions
+    float t = clamp((p - 0.32) / 0.68, 0.0, 1.0);
+    t = t * t * (3.0 - 2.0 * t);
+    float bend = mix(0.62, 8.0, t * t);
+    vec2 scale = mix(vec2(shortest), half_size, t);
+    vec2 q = abs(px) / scale;
+    float shape = pow(pow(q.x, bend) + pow(q.y, bend), 1.0 / bend);
+    float reach = mix(star_size / shortest, 1.12, t);
+    float edge = 1.0 / min(scale.x, scale.y);
+    float inside = clamp((reach - shape) / edge + 0.5, 0.0, 1.0);
+
+    vec3 coords_tex = niri_geo_to_tex * coords_geo;
+    vec4 window = texture2D(niri_tex, coords_tex.st) * inside;
+    // The star's light drains away as the window shows through, leaving a rim that thins out
+    float fill = 1.0 - smoothstep(0.0, 0.4, t);
+    float rim = clamp((shape - (reach - 2.0 * edge)) / edge + 0.5, 0.0, 1.0) * (1.0 - t);
+    return mix(window, vec4(light, 1.0) * inside, max(fill, rim));
+}`;
     }
 
     readonly property string text: {
