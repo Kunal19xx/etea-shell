@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import qs.config
+import "Md5.js" as Md5
 
 // La Ceinture des ciels: choosing a picture is a short climb to where your air ends,
 // with every picture hanging on a belt of small worlds around the planet.
@@ -155,7 +156,7 @@ Singleton {
 
     // Each moon's ink wobbles its own way
     function seedOf(item) {
-        return item ? Qt.md5(keyOf(item)).charCodeAt(0) % 17 * 0.7 : 0;
+        return item ? Md5.md5(keyOf(item)).charCodeAt(0) % 17 * 0.7 : 0;
     }
 
     // The colours a moon is drawn in: your world's own for the sky you wear, the world's
@@ -243,7 +244,7 @@ Singleton {
     }
 
     function copyName(item) {
-        return `${Forge.skies}/worn-${Qt.md5(item.path + item.mtime)}-${largest.width}x${largest.height}.jpg`;
+        return `${Forge.skies}/worn-${Md5.md5(item.path + item.mtime)}-${largest.width}x${largest.height}.jpg`;
     }
 
     // The copy a picture is shown and worn from, once made; asked for after a moment at rest

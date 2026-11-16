@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.config
+import "Md5.js" as Md5
 
 // The wallpapers in your Pictures folder, and their thumbnails. Picking one climbs to the
 // belt of skies. Thumbnails come from the system's cache when another app already made them, x-large
@@ -48,11 +49,11 @@ Singleton {
 
     // Where a picture's thumbnail would be: the shared cache other apps fill, then ours
     function systemThumb(path, size) {
-        return `${home}/.cache/thumbnails/${size ?? "large"}/${Qt.md5(url(path))}.png`;
+        return `${home}/.cache/thumbnails/${size ?? "large"}/${Md5.md5(url(path))}.png`;
     }
 
     function ownThumb(picture) {
-        return `${thumbs}/${Qt.md5(picture.path + picture.mtime)}.jpg`;
+        return `${thumbs}/${Md5.md5(picture.path + picture.mtime)}.jpg`;
     }
 
     // The smallest copy of a picture there is, for reading its colours quickly
@@ -60,10 +61,10 @@ Singleton {
         const picture = pictures.find(picture => picture.path === path);
         if (!picture)
             return url(path);
-        const key = Qt.md5(url(path));
+        const key = Md5.md5(url(path));
         if (systemThumbs[key])
             return url(systemThumb(path));
-        if (ownThumbs[Qt.md5(path + picture.mtime)])
+        if (ownThumbs[Md5.md5(path + picture.mtime)])
             return url(ownThumb(picture));
         return url(systemLarger[key] ? systemThumb(path, "x-large") : path);
     }
@@ -75,12 +76,12 @@ Singleton {
 
     // The first stage that exists
     function firstStage(picture) {
-        const key = Qt.md5(url(picture.path));
+        const key = Md5.md5(url(picture.path));
         if (systemLarger[key])
             return 0;
         if (systemThumbs[key])
             return 1;
-        return ownThumbs[Qt.md5(picture.path + picture.mtime)] ? 2 : 3;
+        return ownThumbs[Md5.md5(picture.path + picture.mtime)] ? 2 : 3;
     }
 
     // Pictures nothing has a thumbnail for yet get one from vips, in the background
