@@ -87,6 +87,29 @@ window-rule {
         }
     }
 
+    // Super on its own opens the launcher, through a small listener niri can't replace
+    Process {
+        id: superTap
+
+        running: true
+        command: ["python3", Quickshell.shellPath("scripts/super-tap.py"), Quickshell.shellPath("").replace(/\/$/, "")]
+        stderr: SplitParser {
+            onRead: line => console.warn("ETEA", line)
+        }
+        // Back after a crash, but not when it can't read the keyboard at all
+        onExited: code => {
+            if (code !== 1)
+                retap.restart();
+        }
+    }
+
+    Timer {
+        id: retap
+
+        interval: 3000
+        onTriggered: superTap.running = true
+    }
+
     FileView {
         id: file
 
