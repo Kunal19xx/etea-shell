@@ -40,11 +40,15 @@ Singleton {
     readonly property bool turning: stepper.running || glide.running
     // The sky the world is wearing, which your own sky's moon stands for
     readonly property int wearing: {
+        if (mode === "online")
+            return -1; // elsewhere, nothing is yours yet
         const sky = planet.sky ?? "";
         const found = items.findIndex(item => sky ? item.path === sky : item.special === "world");
         return Math.max(0, found);
     }
     property bool leaving: false
+    // Which side of the belt: « Mon dossier », your pictures, or « Ailleurs », skies online
+    property string mode: "mine"
     // Trying skies on: the air and the planet up here wear `shown`, your world's colours
     // at first. Once the belt rests on a moon, its picture's colours sweep out of it as a
     // star; that sweep is `next`, `sweep` from 0 to 1, out of the moon `sweepFrom` places
@@ -116,6 +120,9 @@ Singleton {
     }
 
     function build() {
+        // Elsewhere: what the service found, or a moon saying where the search is
+        if (mode === "online")
+            return Online.results.length ? Online.results.slice() : [{ special: "online" }];
         const list = [];
         if (role === "sky" || role === "world")
             list.push({ special: "world" });
@@ -124,10 +131,8 @@ Singleton {
             list.push({ path: sky, mtime: "", month: "" });
         for (const picture of Pictures.pictures)
             list.push({ path: picture.path, mtime: picture.mtime, month: monthOf(picture.mtime) });
-        // Searching online, then what it found, just before the way out to another folder
+        // The way to the skies online, then out to another folder
         list.push({ special: "online" });
-        for (const result of Online.results)
-            list.push(result);
         list.push({ special: "elsewhere" });
         return list;
     }
@@ -159,7 +164,7 @@ Singleton {
         if (item.special === "elsewhere")
             return Lang.t("Autre dossier…");
         if (item.special === "online")
-            return Online.busy ? Lang.t("On cherche…") : Online.query ? `« ${Online.query} »` : Lang.t("Chercher en ligne…");
+            return mode === "online" ? (Online.busy ? Lang.t("On cherche…") : Online.error || Lang.t("Rien ici")) : Lang.t("Ailleurs, en ligne…");
         if (item.remote)
             return `${item.source === "pixabay" ? "Pixabay" : "Wallhaven"} · ${item.width} × ${item.height}${item.author ? " · " + item.author : ""}`;
         const name = item.path.split("/").pop().replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
@@ -347,13 +352,18 @@ Singleton {
             browse();
             return;
         }
-        if (item.special === "online") {
+        // Elsewhere, Enter sends what was typed; otherwise it keeps the sky without wearing it
+        if (mode === "online" && Online.dirty) {
             Online.search(Online.query);
             return;
         }
-        // From elsewhere: down into the folder first, then it lands as any picture would
+        if (item.special === "online") {
+            if (mode === "mine")
+                toggleMode();
+            return;
+        }
         if (item.remote) {
-            fetchThenChoose(item);
+            Online.keep(item);
             return;
         }
         if (index === wearing && role === "sky") {
@@ -398,20 +408,38 @@ Singleton {
             copyWait.restart();
     }
 
-    function fetchThenChoose(item) {
-        Online.download(item, (path, mtime) => {
+    // Shift+Enter elsewhere: down first, then it lands and is worn as any picture would be
+    function wearNow() {
+        const item = items[zenith];
+        if (!item?.remote || landing || leaving) {
+            choose();
+            return;
+        }
+        Online.keep(item, (path, mtime) => {
             const at = items.indexOf(item);
-            if (at < 0 || !open)
+            if (at < 0 || !open || mode !== "online")
                 return;
-            // It takes its moon's place and lands; the belt is only built again next time
+            // It takes its moon's place and lands, from where its moon is now
             const next = items.slice();
             next[at] = { path: path, mtime: mtime, month: monthOf(mtime) };
             items = next;
-            // Turned away while it came down: it lands from where its moon is now
             choose(at, along(at, zenith));
-            Online.results = Online.results.filter(result => result !== item);
-            Pictures.refresh();
-        });
+        }, true);
+    }
+
+    // From one side of the belt to the other. Elsewhere opens on what's trending, unless a
+    // search is already there; back home, the moon at the top is your own sky.
+    function toggleMode() {
+        if (!Planet.inSkies || landing || leaving)
+            return;
+        mode = mode === "mine" ? "online" : "mine";
+        if (mode === "online" && !Online.results.length && !Online.busy)
+            Online.search();
+        holdTurn();
+        items = build();
+        shift = 0;
+        scroll = mode === "online" ? 0 : wearing;
+        typed = "";
     }
 
     function land() {
@@ -509,9 +537,10 @@ Singleton {
     property string typed: ""
 
     function type(text) {
-        // At the online moon, typing is the search
-        if (items[zenith]?.special === "online") {
+        // Elsewhere, typing is the search
+        if (mode === "online") {
             Online.query += text;
+            Online.dirty = true;
             return;
         }
         typed = (typing.running ? typed : "") + text.toLowerCase();
@@ -541,6 +570,7 @@ Singleton {
         if (request.item && !request.from)
             request.from = screenPointOf(request.item);
         root.request = request;
+        mode = "mine";
         items = build();
         holdTurn();
         shift = 0;
@@ -574,7 +604,7 @@ Singleton {
 
         // Most of the time nothing came in or went, and the belt stays as it is
         function onPicturesChanged() {
-            if (root.open && !root.landing && !root.homing && !root.leaving)
+            if (root.open && root.mode === "mine" && !root.landing && !root.homing && !root.leaving)
                 root.rebuild();
         }
     }
@@ -583,16 +613,30 @@ Singleton {
     Connections {
         target: Online
 
-        function onResultsChanged() {
-            if (root.open && !root.landing && !root.homing && !root.leaving)
-                root.rebuild(Online.results.length ? root.keyOf(Online.results[0]) : undefined);
+        // A new list comes up from its first sky; more of it is added behind, in place
+        function onRefreshed(fresh) {
+            if (root.open && root.mode === "online" && !root.landing && !root.homing && !root.leaving)
+                root.rebuild(fresh && Online.results.length ? root.keyOf(Online.results[0]) : undefined);
+        }
+
+        function onErrorChanged() {
+            if (root.open && root.mode === "online" && !Online.results.length)
+                root.rebuild();
         }
     }
 
-    // Backspace at the online moon takes a letter off the search
+    // Near the end of what was found, the next page is asked for
+    onZenithChanged: {
+        if (mode === "online" && zenith >= items.length - 4)
+            Online.more();
+    }
+
+    // Backspace elsewhere takes a letter off the search
     function unType() {
-        if (items[zenith]?.special === "online")
+        if (mode === "online") {
             Online.query = Online.query.slice(0, -1);
+            Online.dirty = true;
+        }
     }
 
     Connections {

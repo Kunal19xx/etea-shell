@@ -147,6 +147,16 @@ Scope {
             Online.search(text);
         }
 
+        // From your folder to the skies online and back, as Tab does
+        function side(): void {
+            Skies.toggleMode();
+        }
+
+        // What Enter does on the moon at the top: elsewhere, keeps it without wearing it
+        function choose(): void {
+            Skies.choose();
+        }
+
         // A number of moons along, as the arrow keys do
         function turn(moons: int): void {
             Skies.step(moons);

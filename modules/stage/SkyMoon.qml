@@ -137,4 +137,16 @@ Item {
         tint: Qt.alpha(root.palette?.light ?? Theme.windowLit, 0.85)
         opacity: shape.ready
     }
+
+    // A sky kept from elsewhere: a small lit star on its shoulder, born as it comes down
+    Star {
+        readonly property bool kept: Online.isKept(root.entry)
+
+        x: root.width / 2 + root.halfHeight * root.aspect * 0.72 - size
+        y: root.height / 2 - root.halfHeight * 0.72 - size
+        size: 6 * root.unit
+        lit: true
+        appear: kept
+        visible: kept && shape.ready > 0
+    }
 }
