@@ -20,11 +20,11 @@ Singleton {
     signal switched()
 
     function next() {
-        switcher.exec(["hyprctl", "switchxkblayout", "all", "next"]);
+        switcher.exec(Compositor.niri ? ["niri", "msg", "action", "switch-layout", "next"] : ["hyprctl", "switchxkblayout", "all", "next"]);
     }
 
     function select(index) {
-        switcher.exec(["hyprctl", "switchxkblayout", "all", String(index)]);
+        switcher.exec(Compositor.niri ? ["niri", "msg", "action", "switch-layout", String(index)] : ["hyprctl", "switchxkblayout", "all", String(index)]);
     }
 
     function choose(list) {
@@ -32,8 +32,9 @@ Singleton {
         apply();
     }
 
+    // On niri the layouts come from its own config
     function apply() {
-        if (!Config.keyboardLayouts.length)
+        if (!Config.keyboardLayouts.length || Compositor.niri)
             return;
         applier.exec(["hyprctl", "eval", `hl.config({ input = { kb_layout = "${Config.keyboardLayouts.join(",")}" } })`]);
     }
@@ -107,8 +108,34 @@ Singleton {
         }
     }
 
+    // niri says which layouts it has and which one is in use, by name; xkb's list turns
+    // the names back into codes, so it's read again once that list is in
+    function readNiri() {
+        const names = Compositor.niriLayouts.names ?? [];
+        const before = root.currentName;
+        root.layouts = names.map(name => root.known.find(layout => layout.name === name)?.code ?? name.slice(0, 2).toLowerCase());
+        root.current = Compositor.niriLayouts.current_idx ?? 0;
+        root.currentName = names[root.current] ?? "";
+        if (before && root.currentName !== before)
+            root.switched();
+    }
+
+    onKnownChanged: {
+        if (Compositor.niri)
+            readNiri();
+    }
+
+    Connections {
+        target: Compositor.niri ? Compositor : null
+
+        function onNiriLayoutsChanged() {
+            root.readNiri();
+        }
+    }
+
     Component.onCompleted: {
         apply();
-        reader.running = true;
+        if (!Compositor.niri)
+            reader.running = true;
     }
 }
