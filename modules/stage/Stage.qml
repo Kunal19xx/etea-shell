@@ -17,7 +17,7 @@ Variants {
 
         required property var modelData
 
-        readonly property bool focused: Hyprland.focusedMonitor?.name === modelData.name
+        readonly property bool focused: Compositor.focusedOutput === modelData.name
         readonly property bool showing: focused && Planet.phase >= Planet.Phase.Spinning
         // The planet's centre is way below the screen, so everything swings around it
         readonly property real pivotY: height * (1 - Theme.terrainHeight) + Theme.terrainCurve * width / 1600
