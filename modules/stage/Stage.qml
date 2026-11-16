@@ -129,9 +129,9 @@ Variants {
         // At the edge: arrows a moon at a time, Page Up and Down a screenful, Home back to
         // your own sky, and typing goes to the picture whose name starts that way
         function skyKey(event) {
-            // Looking at a sky, Enter lands it
+            // Looking at a sky, Enter lands it (elsewhere, keeps it; with Shift, wears it)
             if (Skies.looking && (event.key === Qt.Key_Return || event.key === Qt.Key_Enter))
-                Skies.choose();
+                event.modifiers & Qt.ShiftModifier ? Skies.wearNow() : Skies.choose();
             if (!lensHanded)
                 return;
             if (event.key === Qt.Key_Left)
@@ -145,10 +145,16 @@ Variants {
             else if (event.key === Qt.Key_Home)
                 Skies.flyTo(Skies.wearing);
             else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
-                Skies.choose();
-            else if (event.key === Qt.Key_Space && !event.isAutoRepeat)
+                event.modifiers & Qt.ShiftModifier ? Skies.wearNow() : Skies.choose();
+            // Tab goes from your folder to the skies online and back
+            else if (event.key === Qt.Key_Tab)
+                Skies.toggleMode();
+            else if (event.key === Qt.Key_Space && !event.isAutoRepeat && Skies.mode !== "online")
                 Skies.look(true);
-            else if (event.text.length === 1 && event.text.trim() !== "" && !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)))
+            else if (event.key === Qt.Key_Backspace)
+                Skies.unType();
+            // Spaces only count in a search, where they part the words
+            else if (event.text.length === 1 && (event.text.trim() !== "" || Skies.mode === "online") && !(event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier)))
                 Skies.type(event.text);
         }
 
@@ -418,6 +424,13 @@ Variants {
                 const bottom = stage.planetTop * stage.unit;
                 return Qt.rect(stage.width * (1 - zoom) / 2, bottom - stage.height * zoom, stage.width * zoom, stage.height * zoom);
             }
+        }
+
+        // Which side of the belt, and elsewhere the search and its filters, over the hands
+        SkyControls {
+            anchors.fill: parent
+            unit: stage.unit
+            enabled: stage.lensHanded
         }
 
         // In orbit: Escape goes down a level, 1 to 6 land on a page.

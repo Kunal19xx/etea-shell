@@ -40,13 +40,13 @@ Item {
     property real inked: 1 // how much of its ring and star are drawn
     property bool lit: hovered || opening > 0.5 // the zenith's star is lit, the others sleep
     readonly property var palette: (Palettes.version, Skies.paletteOf(entry))
-    readonly property bool picture: !!entry?.path
+    readonly property bool picture: !!entry?.path || !!entry?.remote
     readonly property real starSize: (4.5 + 3 * opening) * unit
     readonly property real margin: 10 * unit + starSize
 
     // The thumbnails tried in turn: the system's x-large, its large, ours, then the picture
     property int stage: 0
-    readonly property var picked: picture ? Pictures.pictures.find(p => p.path === entry.path) ?? { path: entry.path, mtime: entry.mtime } : null
+    readonly property var picked: entry?.path ? Pictures.pictures.find(p => p.path === entry.path) ?? { path: entry.path, mtime: entry.mtime } : null
 
     x: center.x + radius * Math.sin(phi) - width / 2
     y: center.y - radius * Math.cos(phi) - height / 2
@@ -74,9 +74,10 @@ Item {
         asynchronous: true
         mipmap: true
         sourceSize.width: 512
-        source: root.picked ? Pictures.thumb(root.picked, root.stage) : ""
+        // A sky found online shows the thumbnail its service gives
+        source: root.picked ? Pictures.thumb(root.picked, root.stage) : root.entry?.remote ? root.entry.thumb : ""
         onStatusChanged: {
-            if (status === Image.Error && root.stage < 3)
+            if (status === Image.Error && root.picked && root.stage < 3)
                 root.stage += 1;
         }
     }
@@ -126,13 +127,26 @@ Item {
         }
     }
 
-    // The way out to another folder: the unexplored world, as in Landfall
+    // The way out to another folder: the unexplored world, as in Landfall. And the search
+    // for skies online, a looking glass.
     Icon {
         anchors.centerIn: parent
-        visible: root.entry?.special === "elsewhere"
-        name: "travel_explore"
+        visible: root.entry?.special === "elsewhere" || root.entry?.special === "online"
+        name: root.entry?.special === "online" ? "search" : "travel_explore"
         size: Math.round(root.halfHeight * 0.75)
         tint: Qt.alpha(root.palette?.light ?? Theme.windowLit, 0.85)
         opacity: shape.ready
+    }
+
+    // A sky kept from elsewhere: a small lit star on its shoulder, born as it comes down
+    Star {
+        readonly property bool kept: Online.isKept(root.entry)
+
+        x: root.width / 2 + root.halfHeight * root.aspect * 0.72 - size
+        y: root.height / 2 - root.halfHeight * 0.72 - size
+        size: 6 * root.unit
+        lit: true
+        appear: kept
+        visible: kept && shape.ready > 0
     }
 }

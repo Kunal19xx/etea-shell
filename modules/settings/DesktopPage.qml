@@ -199,4 +199,51 @@ ColumnLayout {
         font.family: Theme.font
         font.pixelSize: 12
     }
+
+    // Skies from elsewhere, searched from the belt's looking-glass moon
+    SettingSection {
+        text: Lang.t("Ciels en ligne")
+        words: ["wallpaper", "fond d'écran", "wallhaven", "pixabay", "en ligne", "online", "recherche", "search"]
+    }
+
+    SettingChoice {
+        key: "onlineSource"
+        label: Lang.t("Chercher sur")
+        hint: Lang.t("Dans la ceinture des ciels, la lune à la loupe. Seuls les mots que tu cherches partent, et un ciel n'est téléchargé que quand tu atterris dessus.")
+        options: [{ id: "wallhaven", label: "Wallhaven" }, { id: "pixabay", label: "Pixabay" }]
+        current: Config.onlineSource
+        onPicked: id => Config.onlineSource = id
+    }
+
+    SettingRow {
+        key: "pixabayKey"
+        visible: Config.onlineSource === "pixabay"
+        label: Lang.t("Clé Pixabay")
+        hint: Config.pixabayKey ? Lang.t("Sans l'accès complet de Pixabay, ses images s'arrêtent à 1 280 pixels de large.") : Lang.t("Gratuite : crée un compte, puis copie ta clé depuis pixabay.com/api/docs. Sans clé, la recherche reste sur Wallhaven.")
+
+        Rectangle {
+            width: 300
+            implicitHeight: 34
+            radius: 11
+            color: Qt.alpha(Theme.windowLit, keyField.activeFocus ? 0.14 : 0.08)
+
+            // Kept out of sight once typed, as any key should be
+            TextInput {
+                id: keyField
+
+                anchors.fill: parent
+                anchors.leftMargin: 10
+                anchors.rightMargin: 10
+                verticalAlignment: TextInput.AlignVCenter
+                text: Config.pixabayKey
+                echoMode: activeFocus ? TextInput.Normal : TextInput.Password
+                color: Theme.text
+                selectionColor: Qt.alpha(Theme.windowLit, 0.4)
+                font.family: Theme.font
+                font.pixelSize: 13
+                clip: true
+                onEditingFinished: Config.pixabayKey = text.trim()
+            }
+        }
+    }
 }
