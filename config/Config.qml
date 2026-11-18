@@ -238,8 +238,8 @@ Singleton {
             property string barPosition: "top"
             property string barSize: "normal"
             property string barStyle: "planet"
-            property var barLayout: ({ left: ["pages"], center: ["clock", "media"], right: ["tray", "status"] })
-            property var barTools: ["capture", "clipboard", "picker"]
+            property var barLayout: ({ left: ["pages"], center: ["clock", "media"], right: ["tools", "tray", "status"] })
+            property var barTools: ["capture", "clipboard", "picker", "wallpaper"]
             property var barResources: ["cpu", "memory"]
             property string clockFormat: "24"
             property bool clockSeconds: false
