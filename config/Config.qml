@@ -115,6 +115,7 @@ Singleton {
     property alias trayTint: saved.trayTint // background apps drawn in the shell's colours
     property alias glassApps: saved.glassApps // windows blurred behind; with an opacity, Hyprland also fades them
     property alias terminalColors: saved.terminalColors // kitty wears the world's colours
+    property alias updateNotify: saved.updateNotify // a daily check, and a notification when there's news
     property alias onlineSource: saved.onlineSource // "wallhaven", or "pixabay" with your own key
     property alias pixabayKey: saved.pixabayKey
     property alias nightWarmth: saved.nightWarmth // the night light's colour, in kelvin
@@ -264,6 +265,7 @@ Singleton {
             property real musicFall: 0.2
             property string musicColor: "accent"
             property bool terminalColors: true
+            property bool updateNotify: true
             property string onlineSource: "wallhaven"
             property string pixabayKey: ""
             // kitty and Zen are see-through on their own and only need the blur
