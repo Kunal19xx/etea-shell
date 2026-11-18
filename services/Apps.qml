@@ -110,14 +110,14 @@ Singleton {
     }
 
     function webEntry(text) {
-        const asset = "file://" + Quickshell.shellPath("assets/icons/search.svg");
+        const asset = Theme.icon("search");
         return { kind: "web", label: Lang.t("Chercher « {0} » sur le web", text), icon: asset, query: text };
     }
 
     // Typing: sums, commands, open windows and apps, whatever fits best first
     function search(text) {
         const typed = text.trim(), wanted = typed.toLowerCase(), found = [];
-        const asset = name => "file://" + Quickshell.shellPath(`assets/icons/${name}.svg`);
+        const asset = name => Theme.icon(name);
         // Nothing typed matches every window there is, that's the map's job, not a search
         if (!typed)
             return [];
