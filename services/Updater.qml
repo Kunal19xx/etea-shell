@@ -3,10 +3,12 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.config
 
-// Keeps ETEA up to date from the git clone it runs from, through scripts/update.sh. It only
-// asks GitHub when Settings › About is open or you press the button. Once the new files land,
-// it reloads the shell on the new version.
+// Keeps ETEA up to date from the git clone it runs from, through scripts/update.sh. It asks
+// GitHub when Settings › About is open or you press the button, and quietly once a day, with
+// a notification when there's something new. Once the new files land, it reloads the shell
+// on the new version.
 Singleton {
     id: root
 
@@ -32,6 +34,36 @@ Singleton {
             return;
         state = "checking";
         checker.running = true;
+    }
+
+    // Once a day, unless Settings say not to: the check, and a word when there's news
+    property bool daily: false
+    property var memory: ({ checkedAt: 0, told: "" })
+
+    function dailyCheck() {
+        if (!Config.updateNotify || busy || state === "unmanaged" || Date.now() - (memory.checkedAt ?? 0) < 24 * 3600 * 1000)
+            return;
+        daily = true;
+        check();
+    }
+
+    function remember(changes) {
+        memory = Object.assign({}, memory, changes);
+        notes.setText(JSON.stringify(memory));
+    }
+
+    // Each set of news is told once: a notification that offers to update right away
+    function tell() {
+        const key = `${mainLine}:${behind}:${changes[0] ?? ""}`;
+        if (memory.told === key)
+            return;
+        remember({ told: key });
+        const summary = mainLine ? Lang.t("{0} a avancé", mainLine) : Lang.t("ETEA a du nouveau");
+        const count = behind === 1 ? Lang.t("Une nouveauté t'attend") : Lang.t("{0} nouveautés t'attendent", behind);
+        const body = [count].concat(changes.slice(0, 3).map(change => `· ${change}`)).join("\n");
+        teller.command = ["notify-send", "-a", "ETEA", "-i", Quickshell.shellPath("assets/logo.png"), "-A", `update=${Lang.t("Mettre à jour")}`, "-A", `later=${Lang.t("Plus tard")}`, summary, body];
+        teller.fallback = [summary, body];
+        teller.running = true;
     }
 
     // Up to date with its own branch, or moved up to the main line it's behind
@@ -77,11 +109,12 @@ Singleton {
         onExited: code => {
             if (code !== 0) {
                 root.state = root.trouble(code);
+                root.daily = false;
                 return;
             }
             // Its own branch first; then, after "@ main", what the main line has beyond it
             const [own, main] = news.text.trim().split(/^@ /m);
-            const lines = own.trim().split("\n");
+            const lines = (own ?? "").trim().split("\n");
             root.behind = Number(lines[0]) || 0;
             root.changes = lines.slice(1).filter(line => line !== "");
             root.mainLine = "";
@@ -94,6 +127,10 @@ Singleton {
                 }
             }
             root.state = root.behind === 0 ? "current" : root.mainLine ? "behindMain" : "available";
+            root.remember({ checkedAt: Date.now() });
+            if (root.daily && root.behind > 0)
+                root.tell();
+            root.daily = false;
         }
     }
 
@@ -130,6 +167,51 @@ Singleton {
 
         function state(): string {
             return `${root.state}, ${root.behind} behind, at ${root.commit} on ${root.branch}`;
+        }
+    }
+
+    // The answer to the notification: its button, or nothing if it was let go
+    Process {
+        id: teller
+
+        property var fallback: []
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (text.trim() === "update")
+                    root.update();
+            }
+        }
+        // Without notify-send, the shell says it itself, without the button
+        onExited: code => {
+            if (code === 127)
+                Notifs.say("ETEA", teller.fallback[0], teller.fallback[1]);
+        }
+    }
+
+    // A few minutes after start, then every hour, it sees whether a day has gone by
+    Timer {
+        interval: 3 * 60 * 1000
+        running: true
+        onTriggered: root.dailyCheck()
+    }
+
+    Timer {
+        interval: 3600 * 1000
+        running: true
+        repeat: true
+        onTriggered: root.dailyCheck()
+    }
+
+    FileView {
+        id: notes
+
+        path: `${Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache"}/etea/updates.json`
+        printErrors: false
+        onLoaded: {
+            try {
+                root.memory = Object.assign({ checkedAt: 0, told: "" }, JSON.parse(text()));
+            } catch (failure) {}
         }
     }
 }

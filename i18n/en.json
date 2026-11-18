@@ -586,5 +586,10 @@
     "{0} a une nouveauté que ta branche n'a pas": "{0} has something new your branch doesn't",
     "{0} a {1} nouveautés que ta branche n'a pas": "{0} has {1} new things your branch doesn't",
     "Ta branche {0} suit sa propre copie sur GitHub, qui est à jour. Rattraper l'avance sur {1}, sans rien fusionner à la main.": "Your branch {0} follows its own copy on GitHub, which is up to date. Catch up with {1}, with nothing to merge by hand.",
-    "Rattraper {0}": "Catch up with {0}"
+    "Rattraper {0}": "Catch up with {0}",
+    "{0} a avancé": "{0} moved on",
+    "ETEA a du nouveau": "ETEA has something new",
+    "Plus tard": "Later",
+    "Me prévenir des mises à jour": "Tell me about updates",
+    "Une fois par jour, ETEA regarde s'il y a du nouveau et te le dit par une notification, une seule fois pour les mêmes nouveautés.": "Once a day, ETEA looks for anything new and tells you with a notification, only once for the same news."
 }

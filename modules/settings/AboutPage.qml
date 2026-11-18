@@ -101,6 +101,16 @@ ColumnLayout {
         }
     }
 
+    SettingSwitch {
+        key: "updateNotify"
+        visible: Updater.state !== "unmanaged"
+        label: Lang.t("Me prévenir des mises à jour")
+        hint: Lang.t("Une fois par jour, ETEA regarde s'il y a du nouveau et te le dit par une notification, une seule fois pour les mêmes nouveautés.")
+        words: ["update", "notification", "mise à jour", "nouvelle version"]
+        on: Config.updateNotify
+        onToggled: Config.updateNotify = !on
+    }
+
     // What's coming, in the project's own words
     ColumnLayout {
         visible: Updater.state === "available" || Updater.state === "behindMain"

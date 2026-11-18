@@ -22,6 +22,9 @@ import qs.services
 // Where it all starts: the world in the back, the stage over the windows, the bar on top.
 // On niri ETEA is only the decoration: Hyprland's window looks stay out.
 ShellRoot {
+    // Made at start, so it can look for a new version once a day
+    readonly property var updates: Updater
+
     Background {}
 
     // On niri the stage stays only for the belt of skies: nothing there turns the planet
