@@ -11,7 +11,7 @@ import qs.services
 ColumnLayout {
     id: root
 
-    readonly property var wifi: Networking.devices.values.find(device => device.networks !== undefined) ?? null
+    readonly property var wifi: Networking.devices.values.find(device => device.type === DeviceType.Wifi) ?? null
     readonly property var inRange: (wifi?.networks.values ?? []).slice().sort((a, b) => b.connected - a.connected || b.signalStrength - a.signalStrength)
     readonly property var networks: showAll ? inRange : inRange.slice(0, 7)
     readonly property string joined: inRange.find(network => network.connected)?.name ?? ""

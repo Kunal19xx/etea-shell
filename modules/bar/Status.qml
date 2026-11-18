@@ -14,11 +14,16 @@ Row {
     // Everything we know about the machine, gathered in one spot
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var wifi: {
-        const device = Networking.devices.values.find(d => d.connected && d.networks !== undefined);
+        const device = Networking.devices.values.find(d => d.connected && d.type === DeviceType.Wifi);
         return device?.networks.values.find(n => n.connected) ?? null;
     }
-    readonly property bool wired: Networking.devices.values.some(d => d.connected && d.networks === undefined)
+    readonly property bool wired: Ethernet.connected
     readonly property int bluetoothDevices: Bluetooth.devices.values.filter(d => d.connected).length
+    // The lowest battery among the connected devices that tell theirs, -1 when none does
+    readonly property real bluetoothBattery: {
+        const levels = Bluetooth.devices.values.filter(d => d.connected && d.batteryAvailable).map(d => d.battery);
+        return levels.length ? Math.min(...levels) : -1;
+    }
     readonly property var battery: UPower.displayDevice
     // Apps listening to the microphone. Captures of what the speakers play don't count,
     // like the visualiser's or a recording with the computer's sound.
@@ -108,6 +113,8 @@ Row {
                 case "bluetooth":
                     if (!Bluetooth.defaultAdapter?.enabled)
                         return ["bluetooth-slash", ""];
+                    if (root.bluetoothBattery >= 0 && Config.barPercent)
+                        return ["bluetooth-connected", Math.round(root.bluetoothBattery * 100) + "%"];
                     return [root.bluetoothDevices ? "bluetooth-connected" : "bluetooth", root.bluetoothDevices ? String(root.bluetoothDevices) : ""];
                 case "volume":
                     if (!root.sink?.audio)
