@@ -63,6 +63,13 @@ Singleton {
 
     // One font for the whole shell, icons on the side
     readonly property string font: "Poppins"
+
+    // An icon from the pack chosen in Settings. The filled Material icons sit in
+    // assets/icons itself, every other pack in a folder of its own with the same names.
+    function icon(name, pack) {
+        const folder = (pack ?? Config.iconPack) === "material" ? "" : `${pack ?? Config.iconPack}/`;
+        return "file://" + Quickshell.shellPath(`assets/icons/${folder}${name}.svg`);
+    }
     readonly property int textSize: Math.round(14 * barScale)
 
     // The everyday pace: quick enough to never keep you waiting

@@ -63,6 +63,15 @@ ColumnLayout {
         onPicked: id => Config.barStyle = id
     }
 
+    SettingChoice {
+        key: "iconPack"
+        label: Lang.t("Icônes")
+        hint: Lang.t("Partout dans le shell : la barre, les panneaux, les menus et le lanceur.")
+        options: [{ id: "phosphor-fill", label: Lang.t("Phosphor plein") }, { id: "phosphor", label: Lang.t("Phosphor trait") }, { id: "material", label: Lang.t("Material plein") }, { id: "material-light", label: Lang.t("Material trait") }]
+        current: Config.iconPack
+        onPicked: id => Config.iconPack = id
+    }
+
     SettingSwitch {
         key: "hotCorners"
         label: Lang.t("Coins actifs")

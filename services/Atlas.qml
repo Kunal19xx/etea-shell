@@ -52,6 +52,7 @@ Singleton {
         windowGapOuter: ["marge", "gaps", "espace"],
         windowGapInner: ["marge", "gaps", "espace"],
         terminalColors: ["kitty", "terminal", "couleurs", "colors", "thème", "theme"],
+        iconPack: ["icônes", "icons", "pack", "phosphor", "material", "pictogrammes"],
         glassApps: ["flou", "blur", "transparence", "transparent", "verre", "opacité"],
         nightWarmth: ["veilleuse", "night light", "filtre bleu", "lumière bleue", "kelvin"],
         notifSeconds: ["notification", "durée"],
