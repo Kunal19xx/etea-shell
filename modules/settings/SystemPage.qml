@@ -1,9 +1,11 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import qs.config
 import qs.services
 
-// The machine's small comforts: how warm the night light is, how long signals stay.
+// The machine's small comforts: how warm the night light is, how long signals stay, and
+// a fresh start for the shell when something got lost along the way.
 ColumnLayout {
     spacing: 18
 
@@ -67,5 +69,20 @@ ColumnLayout {
         hint: Lang.t("Ni veille, ni verrouillage, tant que c'est allumé.")
         on: Wake.on
         onToggled: Wake.on = !Wake.on
+    }
+
+    SettingSection {
+        text: Lang.t("Shell")
+    }
+
+    SettingRow {
+        label: Lang.t("Recharger le shell")
+        hint: Lang.t("Repart de zéro et reprend ses raccourcis, comme au démarrage. Utile si Super n'ouvre plus le lanceur.")
+        words: ["recharger", "reload", "relancer", "restart", "raccourcis", "shortcuts", "lanceur", "launcher"]
+
+        SettingButton {
+            label: Lang.t("Recharger")
+            onPicked: Quickshell.reload(true)
+        }
     }
 }

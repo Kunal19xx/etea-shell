@@ -70,6 +70,8 @@ ColumnLayout {
         Repeater {
             model: [
                 { icon: "gear-six", run: () => Menus.settingsOpen = true },
+                // A fresh start for the shell, shortcuts and window settings taken back
+                { icon: "refresh", run: () => Quickshell.reload(true) },
                 { icon: "power", run: () => Menus.sessionOpen = true }
             ]
 
