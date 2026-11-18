@@ -149,13 +149,30 @@ Scope {
         id: reapply
 
         interval: 120
-        onTriggered: apply.running = true
+        onTriggered: root.run(apply)
+    }
+
+    // A process asked again while it's still going would let the request slip by, so it
+    // goes once more as soon as it's done
+    function run(process) {
+        if (process.running)
+            process.again = true;
+        else
+            process.running = true;
     }
 
     Process {
         id: apply
 
+        property bool again: false
+
         command: ["hyprctl", "eval", root.settings]
+        onExited: {
+            if (again) {
+                again = false;
+                running = true;
+            }
+        }
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.trim() !== "ok")
@@ -168,24 +185,42 @@ Scope {
     Process {
         id: shortcuts
 
+        property bool again: false
+
         command: ["bash", Quickshell.shellPath("scripts/dev.sh"), "shortcuts"]
+        onExited: {
+            if (again) {
+                again = false;
+                running = true;
+            }
+        }
     }
 
-    // A Hyprland reload wipes everything we set, shortcuts included, so put it right back
+    // A Hyprland reload wipes everything we set, shortcuts included, so put it right back.
+    // Hyprland reads its config twice on a reload, so the event can come twice in a row:
+    // wait for the last one, or the second read wipes the shortcuts just taken back.
+    Timer {
+        id: retake
+
+        interval: 250
+        onTriggered: {
+            root.run(apply);
+            root.run(shortcuts);
+        }
+    }
+
     Connections {
         target: Hyprland
 
         function onRawEvent(event) {
-            if (event.name === "configreloaded") {
-                apply.running = true;
-                shortcuts.running = true;
-            }
+            if (event.name === "configreloaded")
+                retake.restart();
         }
     }
 
     // Started straight from Hyprland, the shell takes its shortcuts itself
     Component.onCompleted: {
-        apply.running = true;
-        shortcuts.running = true;
+        root.run(apply);
+        root.run(shortcuts);
     }
 }
