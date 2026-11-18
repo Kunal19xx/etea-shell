@@ -582,5 +582,9 @@
     "Général": "General",
     "Anime": "Anime",
     "Personnes": "People",
-    "Rien ici pour ces filtres.": "Nothing here for these filters."
+    "Rien ici pour ces filtres.": "Nothing here for these filters.",
+    "{0} a une nouveauté que ta branche n'a pas": "{0} has something new your branch doesn't",
+    "{0} a {1} nouveautés que ta branche n'a pas": "{0} has {1} new things your branch doesn't",
+    "Ta branche {0} suit sa propre copie sur GitHub, qui est à jour. Rattraper l'avance sur {1}, sans rien fusionner à la main.": "Your branch {0} follows its own copy on GitHub, which is up to date. Catch up with {1}, with nothing to merge by hand.",
+    "Rattraper {0}": "Catch up with {0}"
 }

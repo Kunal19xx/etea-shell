@@ -14,11 +14,12 @@ Singleton {
     property string date: ""
     property string branch: ""
 
-    // "idle", "checking", "current", "available", "updating", "updated",
+    // "idle", "checking", "current", "available", "behindMain", "updating", "updated",
     // "offline", "unmanaged", "edited" or "diverged"
     property string state: "idle"
     property int behind: 0
     property var changes: [] // titles of the commits waiting
+    property string mainLine: "" // on a branch of its own, the main line it's behind, like "main"
 
     readonly property bool busy: state === "checking" || state === "updating"
 
@@ -33,9 +34,11 @@ Singleton {
         checker.running = true;
     }
 
+    // Up to date with its own branch, or moved up to the main line it's behind
     function update() {
         if (busy)
             return;
+        applier.command = ["bash", Quickshell.shellPath("scripts/update.sh"), state === "behindMain" ? "catchup" : "apply"];
         state = "updating";
         applier.running = true;
     }
@@ -76,10 +79,21 @@ Singleton {
                 root.state = root.trouble(code);
                 return;
             }
-            const lines = news.text.trim().split("\n");
+            // Its own branch first; then, after "@ main", what the main line has beyond it
+            const [own, main] = news.text.trim().split(/^@ /m);
+            const lines = own.trim().split("\n");
             root.behind = Number(lines[0]) || 0;
             root.changes = lines.slice(1).filter(line => line !== "");
-            root.state = root.behind > 0 ? "available" : "current";
+            root.mainLine = "";
+            if (root.behind === 0 && main) {
+                const rest = main.trim().split("\n");
+                if (Number(rest[1]) > 0) {
+                    root.mainLine = rest[0].trim();
+                    root.behind = Number(rest[1]);
+                    root.changes = rest.slice(2).filter(line => line !== "");
+                }
+            }
+            root.state = root.behind === 0 ? "current" : root.mainLine ? "behindMain" : "available";
         }
     }
 

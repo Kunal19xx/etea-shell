@@ -17,6 +17,8 @@ ColumnLayout {
         checking: { text: Lang.t("On regarde s'il y a du nouveau…"), hint: "", action: "" },
         current: { text: Lang.t("Tu as la dernière version"), hint: Lang.t("Rien de neuf pour l'instant."), action: Lang.t("Vérifier") },
         available: { text: Updater.behind === 1 ? Lang.t("Une nouveauté t'attend") : Lang.t("{0} nouveautés t'attendent", Updater.behind), hint: Lang.t("Le shell se recharge tout seul une fois à jour."), action: Lang.t("Mettre à jour") },
+        // On a branch of its own: it's up to date, but the main line went further
+        behindMain: { text: Updater.behind === 1 ? Lang.t("{0} a une nouveauté que ta branche n'a pas", Updater.mainLine) : Lang.t("{0} a {1} nouveautés que ta branche n'a pas", Updater.mainLine, Updater.behind), hint: Lang.t("Ta branche {0} suit sa propre copie sur GitHub, qui est à jour. Rattraper l'avance sur {1}, sans rien fusionner à la main.", Updater.branch, Updater.mainLine), action: Lang.t("Rattraper {0}", Updater.mainLine) },
         updating: { text: Lang.t("Mise à jour…"), hint: "", action: "" },
         updated: { text: Lang.t("À jour"), hint: Lang.t("Le shell se recharge avec la nouvelle version."), action: "" },
         offline: { text: Lang.t("GitHub ne répond pas"), hint: Lang.t("Vérifie ta connexion et réessaie."), action: Lang.t("Réessayer") },
@@ -94,19 +96,19 @@ ColumnLayout {
         SettingButton {
             visible: root.status.action !== ""
             label: root.status.action
-            quiet: Updater.state !== "available"
-            onPicked: Updater.state === "available" ? Updater.update() : Updater.check()
+            quiet: Updater.state !== "available" && Updater.state !== "behindMain"
+            onPicked: Updater.state === "available" || Updater.state === "behindMain" ? Updater.update() : Updater.check()
         }
     }
 
     // What's coming, in the project's own words
     ColumnLayout {
-        visible: Updater.state === "available"
+        visible: Updater.state === "available" || Updater.state === "behindMain"
         Layout.fillWidth: true
         spacing: 6
 
         Repeater {
-            model: Updater.state === "available" ? Updater.changes : []
+            model: Updater.state === "available" || Updater.state === "behindMain" ? Updater.changes : []
 
             RowLayout {
                 required property string modelData
