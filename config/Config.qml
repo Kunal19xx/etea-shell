@@ -101,6 +101,7 @@ Singleton {
     property alias barPosition: saved.barPosition // "top" or "bottom"
     property alias barSize: saved.barSize // "compact", "normal" or "large"
     property alias barStyle: saved.barStyle // "sky", "islands" or "band"
+    property alias iconPack: saved.iconPack // a folder of assets/icons, "material" is assets/icons itself
     property alias barLayout: saved.barLayout // { left, center, right }, each a list of modules
     property alias barTools: saved.barTools
     property alias barResources: saved.barResources
@@ -239,6 +240,7 @@ Singleton {
             property string barPosition: "top"
             property string barSize: "normal"
             property string barStyle: "planet"
+            property string iconPack: "phosphor-fill"
             property var barLayout: ({ left: ["pages"], center: ["clock", "media"], right: ["tools", "tray", "status"] })
             property var barTools: ["capture", "clipboard", "picker", "wallpaper"]
             property var barResources: ["cpu", "memory"]

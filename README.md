@@ -264,7 +264,8 @@ Want ETEA in your language? Copy `i18n/en.json`, translate each line, add it to
 ## Credits
 
 - [Quickshell](https://quickshell.outfoxxed.me) by outfoxxed, which makes all of this possible.
-- Icons: [Material Symbols](https://fonts.google.com/icons) (Apache 2.0).
+- Icons: [Phosphor](https://phosphoricons.com) (MIT) and [Material Symbols](https://fonts.google.com/icons)
+  (Apache 2.0), to pick from in Settings › Bar › Icons.
 - Font: [Poppins](https://fonts.google.com/specimen/Poppins) (SIL Open Font License).
 - Emoji names: Unicode and CLDR data (Unicode License v3).
 - Lyrics: [LRCLIB](https://lrclib.net). Weather: [Open-Meteo](https://open-meteo.com).
@@ -275,7 +276,8 @@ Want ETEA in your language? Copy `i18n/en.json`, translate each line, add it to
 
 ETEA Shell is free software under the [GNU General Public License v3.0](LICENSE): use it, study
 it, change it and share it, as long as what you share stays under the same terms. That covers
-the code and the artwork made for it, the lock screen drawing included. Poppins and Material
-Symbols keep their own licenses (`assets/fonts/OFL.txt` and `assets/icons/LICENSE.txt`).
+the code and the artwork made for it, the lock screen drawing included. Poppins, Material
+Symbols and Phosphor keep their own licenses (`assets/fonts/OFL.txt`, `assets/icons/LICENSE.txt`
+and `assets/icons/phosphor/LICENSE.txt`).
 
 Just give me some credits if my work helps you ;)
