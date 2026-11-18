@@ -21,7 +21,7 @@ ColumnLayout {
     readonly property var battery: UPower.displayDevice
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property var network: {
-        const wifi = Networking.devices.values.find(device => device.networks !== undefined);
+        const wifi = Networking.devices.values.find(device => device.type === DeviceType.Wifi);
         return wifi?.networks.values.find(network => network.connected) ?? null;
     }
     readonly property var paired: Bluetooth.devices.values.find(device => device.connected) ?? null
