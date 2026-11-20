@@ -17,6 +17,7 @@ Singleton {
         { id: "barre", label: Lang.t("Barre"), page: "BarPage.qml" },
         { id: "fenetres", label: Lang.t("Fenêtres"), page: "WindowsPage.qml" },
         { id: "mouvement", label: Lang.t("Mouvement"), page: "MotionPage.qml" },
+        { id: "ecrans", label: Lang.t("Écrans"), page: "ScreensPage.qml" },
         { id: "systeme", label: Lang.t("Système"), page: "SystemPage.qml" },
         { id: "verrouillage", label: Lang.t("Verrouillage"), page: "LockPage.qml" },
         { id: "langue", label: Lang.t("Langue"), page: "LanguagePage.qml" },
