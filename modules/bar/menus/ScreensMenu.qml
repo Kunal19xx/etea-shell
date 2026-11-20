@@ -53,16 +53,16 @@ ColumnLayout {
 
     // How they're shown together, once there are two
     Repeater {
-        model: Screens.several ? [{ id: "extend", label: Lang.t("Étendre"), detail: Lang.t("côte à côte") }].concat(Screens.canMirror ? [{ id: "mirror", label: Lang.t("Dupliquer"), detail: Lang.t("la même image") }] : []).concat(Screens.outputs.map(output => ({ id: "only:" + output.key, label: Lang.t("Seulement {0}", Screens.nameOf(output)), detail: "" }))) : []
+        model: Screens.kinds
 
         MenuRow {
-            required property var modelData
+            required property string modelData
 
             Layout.fillWidth: true
-            label: modelData.label
-            detail: modelData.detail
-            active: Screens.projection === modelData.id
-            onPicked: Screens.project(modelData.id)
+            label: Screens.projectionName(modelData)
+            detail: ({ extend: Lang.t("côte à côte"), mirror: Lang.t("la même image") })[modelData] ?? ""
+            active: Screens.projection === modelData
+            onPicked: Screens.project(modelData)
         }
     }
 

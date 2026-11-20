@@ -66,7 +66,7 @@ ColumnLayout {
         hint: Lang.t("Étendre le bureau, le dupliquer, ou n'en allumer qu'un.")
         words: ["projection", "dupliquer", "étendre", "miroir", "mirror", "extend", "duplicate", "only"]
         current: Screens.projection
-        options: [{ id: "extend", label: Lang.t("Étendre") }].concat(Screens.canMirror ? [{ id: "mirror", label: Lang.t("Dupliquer") }] : []).concat(Screens.outputs.map(output => ({ id: "only:" + output.key, label: Lang.t("Seulement {0}", Screens.nameOf(output)) })))
+        options: Screens.kinds.map(kind => ({ id: kind, label: Screens.projectionName(kind) }))
         onPicked: id => Screens.project(id)
     }
 

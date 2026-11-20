@@ -29,6 +29,21 @@ Singleton {
         return outputs.some(output => output.mirror) ? "mirror" : "extend";
     }
     readonly property bool canMirror: !Compositor.niri
+    // Every way of showing them, in the order Super+P or the panel's tile goes round them
+    readonly property var kinds: several ? ["extend"].concat(canMirror ? ["mirror"] : []).concat(outputs.map(output => "only:" + output.key)) : []
+
+    function projectionName(kind) {
+        if (kind === "extend")
+            return Lang.t("Étendre");
+        if (kind === "mirror")
+            return Lang.t("Dupliquer");
+        return Lang.t("Seulement {0}", nameOf(outputs.find(output => "only:" + output.key === kind)));
+    }
+
+    function projectNext() {
+        if (kinds.length)
+            project(kinds[(kinds.indexOf(projection) + 1) % kinds.length]);
+    }
 
     // A change waiting for you to keep it, and the seconds left before it's undone
     property var before: null
@@ -416,12 +431,10 @@ Singleton {
 
         // "extend", "mirror", "only:<screen>", or "next" to go round them
         function project(kind: string): void {
-            if (kind !== "next") {
+            if (kind === "next")
+                root.projectNext();
+            else
                 root.project(kind);
-                return;
-            }
-            const kinds = ["extend"].concat(root.canMirror ? ["mirror"] : []).concat(root.outputs.map(output => "only:" + output.key));
-            root.project(kinds[(kinds.indexOf(root.projection) + 1) % kinds.length]);
         }
 
         function menu(): void {
