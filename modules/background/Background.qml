@@ -28,8 +28,9 @@ Variants {
             id: world
 
             anchors.fill: parent
-            // Hyprland's slide moves the windows only, the world stays where it is
-            angle: Config.pageTransition === "slide" ? 0 : Planet.resting
+            // Hyprland's slide moves the windows only, the world stays where it is. With the
+            // orbit plugin the stage stays out of the way, so this world turns with the page.
+            angle: Config.pageTransition === "slide" ? 0 : Planet.resting + (Planet.nativeTurn ? Planet.travel : 0)
             interactive: true
         }
 

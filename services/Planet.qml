@@ -28,6 +28,10 @@ Singleton {
     readonly property bool pageEmpty: Hyprland.toplevels.values.every(t => t.workspace?.id !== current)
 
     property int phase: Planet.Phase.Idle
+    // The orbit plugin turns the windows in Hyprland: no stand-ins, no photos, the shell
+    // only turns the planet behind them, on the plugin's clock
+    property bool nativeTurn: false
+    readonly property bool pluginTurns: OrbitPlugin.turns // also wakes the plugin's service at start
     property real resting: 0 // where the planet sits between two transitions
     property real travel: 0 // how far it has turned so far
     property real distance: 0 // how far it has to turn in total
@@ -203,7 +207,7 @@ Singleton {
     function letGoOfSwipe(commit) {
         swipeEnd = null;
         if (commit)
-            Hyprland.dispatch(`hl.dsp.focus({ workspace = ${target} })`);
+            Hyprland.dispatch(OrbitPlugin.quietFocus(target));
         glide.stop();
         glide.committed = commit;
         glide.from = travel;
@@ -230,6 +234,19 @@ Singleton {
             return;
         // Hyprland's own slide, to compare: it does it all
         if (Config.pageTransition === "slide") {
+            Hyprland.dispatch(`hl.dsp.focus({ workspace = ${page} })`);
+            return;
+        }
+
+        // The plugin turns the windows; the planet waits for its word to start
+        if (pluginTurns && !fingerDriven) {
+            origin = current;
+            target = page;
+            pressedAt = Date.now();
+            distance = spinSteps(origin, target) * step;
+            nativeTurn = true;
+            phase = Planet.Phase.Spinning;
+            nativeStart.restart();
             Hyprland.dispatch(`hl.dsp.focus({ workspace = ${page} })`);
             return;
         }
@@ -501,7 +518,7 @@ Singleton {
         origin = target;
         // On an empty page Hyprland has nothing to focus and can drift back, so insist
         if (current !== target)
-            Hyprland.dispatch(`hl.dsp.focus({ workspace = ${target} })`);
+            Hyprland.dispatch(OrbitPlugin.quietFocus(target));
         if (newWorld) {
             newWorld = false;
             arrive();
@@ -511,6 +528,28 @@ Singleton {
             return;
         }
         settle();
+    }
+
+    // The plugin started turning the windows: the planet goes along, at the same pace. A
+    // page changed by someone else, a key of Hyprland's own say, is followed the same way.
+    function followTurn(data) {
+        const [from, to, steps, duration] = data.split(",").map(Number);
+        if (phase === Planet.Phase.Idle && !isNaN(to)) {
+            origin = isNaN(from) ? current : from;
+            target = to;
+            pressedAt = Date.now();
+            nativeTurn = true;
+            phase = Planet.Phase.Spinning;
+        } else if (!nativeTurn || spin.running) {
+            return;
+        }
+        nativeStart.stop();
+        distance = steps * step;
+        finished(Date.now() - pressedAt);
+        spin.duration = Math.max(1, duration);
+        spin.from = 0;
+        spin.to = distance;
+        spin.start();
     }
 
     // No looping round: page 1 is the first, and past the end of a group comes the next one
@@ -576,6 +615,16 @@ Singleton {
     }
 
     function settle() {
+        // Nothing of ours covers the screen: the windows are already where they belong
+        if (nativeTurn) {
+            nativeTurn = false;
+            resting += distance;
+            origin = target;
+            distance = 0;
+            travel = 0;
+            reset();
+            return;
+        }
         // The old page has left the screen. Drop it now, or it snaps back to the
         // centre once the counters reset, and an empty page wouldn't hide it.
         leaving = [];
@@ -592,6 +641,8 @@ Singleton {
     }
 
     function recover() {
+        nativeTurn = false;
+        nativeStart.stop();
         hold = false;
         waiting = false;
         for (const animation of [spin, rise, descent, look, fade, spinShift, systemShift, systemSlide])
@@ -697,7 +748,7 @@ Singleton {
         id: orbitLanding
 
         interval: 40
-        onTriggered: Hyprland.dispatch(`hl.dsp.focus({ workspace = ${root.target} })`)
+        onTriggered: Hyprland.dispatch(OrbitPlugin.quietFocus(root.target))
     }
 
     // The scene covers every window while a transition runs, so a transition that gets
@@ -807,6 +858,22 @@ Singleton {
         onFinished: root.landed()
     }
 
+    // The plugin had nothing to turn, the same page or a switch it let through: carry on
+    Timer {
+        id: nativeStart
+
+        interval: 300
+        onTriggered: {
+            if (!root.nativeTurn || spin.running)
+                return;
+            root.nativeTurn = false;
+            root.distance = 0;
+            root.travel = 0;
+            root.resting = (root.current - 1) * root.step;
+            root.reset();
+        }
+    }
+
     // A window that refuses to be captured should never hold the page back
     Timer {
         id: captureTimeout
@@ -822,7 +889,7 @@ Singleton {
         interval: 34
         onTriggered: {
             root.finished(Date.now() - root.pressedAt);
-            Hyprland.dispatch(`hl.dsp.focus({ workspace = ${root.target} })`);
+            Hyprland.dispatch(OrbitPlugin.quietFocus(root.target));
             spin.duration = Math.max(1, Theme.pageSpin * (0.75 + 0.25 * Math.abs(root.distance / root.step)));
             spin.from = 0;
             spin.to = root.distance;
@@ -876,6 +943,10 @@ Singleton {
 
         // The swipe's start, moves and end, sent by the gesture scripts/dev.sh sets up
         function onRawEvent(event) {
+            if (event.name === "orbit") {
+                root.followTurn(event.data);
+                return;
+            }
             if (event.name !== "custom" || !event.data.startsWith("etea:swipe,"))
                 return;
             const [, step, value] = event.data.split(",");
