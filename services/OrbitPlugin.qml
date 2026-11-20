@@ -12,8 +12,12 @@ Singleton {
     id: root
 
     property bool loaded: false
+    property real version: 0
+    property bool swipeOpen: true // the fingers turn pages, unless the planet is up in orbit
     // Page changes are the plugin's to draw, as long as the planet is the transition
     readonly property bool turns: loaded && !Compositor.niri && Config.pageTransition === "planet"
+    // From 0.2 it follows the fingers too
+    readonly property bool swipes: turns && version >= 0.2
 
     // The planet as the stage draws it, so both turn around the same centre at the same pace
     readonly property string settings: `hl.config({ plugin = { orbit = {
@@ -21,7 +25,9 @@ Singleton {
         pages = ${Config.pages},
         duration = ${Math.round(Theme.pageSpin)},
         terrain_height = ${Theme.terrainHeight},
-        terrain_curve = ${Theme.terrainCurve}
+        terrain_curve = ${Theme.terrainCurve}${version >= 0.2 ? `,
+        swipe = ${swipeOpen ? 1 : 0},
+        last_page = ${Config.pages * 10}` : ""}
     } } })`
 
     onSettingsChanged: tell()
@@ -52,7 +58,9 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    root.loaded = JSON.parse(text).some(plugin => plugin.name === "orbit");
+                    const orbit = JSON.parse(text).find(plugin => plugin.name === "orbit");
+                    root.version = Number(orbit?.version ?? 0) || 0;
+                    root.loaded = !!orbit;
                 } catch (e) {
                     root.loaded = false;
                 }

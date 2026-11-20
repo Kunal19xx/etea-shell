@@ -325,21 +325,19 @@ Variants {
                     }
                 }
 
-                // And the page turning away keeps its own until it has gone
-                Loader {
+                // And the page turning away keeps its own until it has gone. Always there, so a
+                // turn doesn't start by building it.
+                WindowFrames {
                     anchors.fill: parent
+                    screenX: stage.modelData.x
+                    screenY: stage.modelData.y
+                    page: Planet.nativeTurn ? Planet.origin : -1
+                    leavingPage: true
                     active: stage.focused && Planet.nativeTurn
-
-                    sourceComponent: WindowFrames {
-                        screenX: stage.modelData.x
-                        screenY: stage.modelData.y
-                        page: Planet.origin
-                        leavingPage: true
-                        transform: Rotation {
-                            origin.x: stage.width / 2
-                            origin.y: stage.pivotY
-                            angle: -Planet.travel * 180 / Math.PI
-                        }
+                    transform: Rotation {
+                        origin.x: stage.width / 2
+                        origin.y: stage.pivotY
+                        angle: -Planet.travel * 180 / Math.PI
                     }
                 }
 
@@ -493,9 +491,11 @@ Variants {
         }
 
         // Every move is measured, so we know if it's really smooth
+        // Counting frames makes this window draw every one of them: with the plugin the stage
+        // shows nothing, so the world underneath is the one counted
         FrameMeter {
             name: "spin"
-            running: stage.focused && Planet.phase === Planet.Phase.Spinning
+            running: stage.focused && Planet.phase === Planet.Phase.Spinning && !Planet.nativeTurn
         }
 
         FrameMeter {
@@ -600,7 +600,9 @@ Variants {
             }
 
             function onFinished(prepareMs) {
-                if (stage.focused)
+                if (stage.focused && Planet.nativeTurn)
+                    console.info(`ETEA ready: ${prepareMs} ms after the key press, turned by the orbit plugin`);
+                else if (stage.focused)
                     console.info(`ETEA ready: ${prepareMs} ms after the key press, ${Planet.captured}/${Planet.expected} captures`);
             }
         }

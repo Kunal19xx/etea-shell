@@ -32,6 +32,13 @@ Singleton {
     // only turns the planet behind them, on the plugin's clock
     property bool nativeTurn: false
     readonly property bool pluginTurns: OrbitPlugin.turns // also wakes the plugin's service at start
+
+    // Up in orbit or among the skies, the fingers aren't turning pages
+    Binding {
+        target: OrbitPlugin
+        property: "swipeOpen"
+        value: !root.aloft
+    }
     property real resting: 0 // where the planet sits between two transitions
     property real travel: 0 // how far it has turned so far
     property real distance: 0 // how far it has to turn in total
@@ -127,7 +134,9 @@ Singleton {
     // While a page turns, focus lands at once: the window arriving behind the scene is
     // already lit when the scene steps aside, instead of fading in right in front of you.
     // Ordinary focus changes keep their slow fade.
-    readonly property bool focusQuiet: phase !== Planet.Phase.Idle
+    // With the plugin nothing covers the windows, so there's nothing to hide the fade behind:
+    // focus keeps its own pace, and Hyprland isn't reconfigured as the turn starts
+    readonly property bool focusQuiet: phase !== Planet.Phase.Idle && !nativeTurn
     property bool quieted: false
     readonly property string fadesOff: 'for _, leaf in ipairs({ "fadeSwitch", "fadeDim", "fadeShadow", "border" }) do hl.animation({ leaf = leaf, enabled = false }) end'
     readonly property string fadesOn: `for _, leaf in ipairs({ "fadeSwitch", "fadeDim", "fadeShadow", "border" }) do hl.animation({ leaf = leaf, enabled = true, speed = ${Theme.windowFocusSpeed}, bezier = "eteaFocus" }) end`
@@ -552,6 +561,36 @@ Singleton {
         spin.start();
     }
 
+    // The plugin follows the fingers inside Hyprland; the planet follows the plugin
+    function followSwipe(name, data) {
+        const values = data.split(",").map(Number);
+        if (name === "orbitswipe") {
+            if (phase !== Planet.Phase.Idle)
+                return;
+            origin = isNaN(values[0]) ? current : values[0];
+            target = values[1];
+            distance = values[2] * step;
+            travel = 0;
+            pressedAt = Date.now();
+            following = true;
+            fingerDriven = true;
+            nativeTurn = true;
+            phase = Planet.Phase.Spinning;
+        } else if (!nativeTurn || !fingerDriven) {
+            return;
+        } else if (name === "orbitmove") {
+            travel = values[0] * distance;
+        } else if (name === "orbitglide") {
+            following = false;
+            glide.stop();
+            glide.committed = values[0] === 1;
+            glide.from = travel;
+            glide.to = glide.committed ? distance : 0;
+            glide.duration = Math.max(1, values[1]);
+            glide.start();
+        }
+    }
+
     // No looping round: page 1 is the first, and past the end of a group comes the next one
     function requestNext(direction) {
         request(current + direction);
@@ -605,6 +644,13 @@ Singleton {
     // The swipe came back: nothing changed page. The page we started from is the one on
     // screen, so it stays while the scene steps aside; only the page that never came goes.
     function rollBack() {
+        if (nativeTurn) {
+            nativeTurn = false;
+            distance = 0;
+            travel = 0;
+            reset();
+            return;
+        }
         arriving = [];
         distance = 0;
         travel = 0;
@@ -947,6 +993,10 @@ Singleton {
                 root.followTurn(event.data);
                 return;
             }
+            if (event.name === "orbitswipe" || event.name === "orbitmove" || event.name === "orbitglide") {
+                root.followSwipe(event.name, event.data);
+                return;
+            }
             if (event.name !== "custom" || !event.data.startsWith("etea:swipe,"))
                 return;
             const [, step, value] = event.data.split(",");
@@ -955,6 +1005,9 @@ Singleton {
                 Skies.swipe(step, value);
                 return;
             }
+            // On the ground, the plugin has them
+            if (OrbitPlugin.swipes)
+                return;
             if (step === "start")
                 root.swipeStart();
             else if (step === "move")

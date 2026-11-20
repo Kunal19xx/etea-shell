@@ -27,15 +27,27 @@ Scope {
     ` : `
         hl.animation({ leaf = "workspaces", enabled = false })
         pcall(hl.gesture, { fingers = 4, direction = "horizontal", action = "unset" })
-        -- The start of the swipe, every move and its end reach the shell as events
+        -- The start of the swipe, every move and its end reach the shell as events. With the
+        -- orbit plugin they reach it first, right here in Hyprland, so the windows follow the
+        -- fingers without a trip through the shell.
+        local function orbit(...)
+            local plugin = hl.plugin and hl.plugin.orbit
+            if plugin and plugin.swipe then
+                plugin.swipe(...)
+            end
+        end
         hl.gesture({ fingers = 4, direction = "horizontal", action = {
             start = function()
+                orbit("start")
                 hl.dispatch(hl.dsp.event("etea:swipe,start"))
             end,
             update = function(e)
-                hl.dispatch(hl.dsp.event("etea:swipe,move," .. (e.delta and e.delta.x or 0)))
+                local dx = e.delta and e.delta.x or 0
+                orbit("move", dx)
+                hl.dispatch(hl.dsp.event("etea:swipe,move," .. dx))
             end,
             finish = function(e)
+                orbit("end", e.cancelled == true)
                 hl.dispatch(hl.dsp.event("etea:swipe,end," .. tostring(e.cancelled == true)))
             end
         } })
