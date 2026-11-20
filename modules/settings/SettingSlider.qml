@@ -12,6 +12,15 @@ SettingRow {
     property string unit: ""
     property int decimals: 0
     property real shownAs: 1 // multiply what's stored before showing it, for percentages
+    // A value the line holds on to as you slide past, so it's easy to find again
+    property real notch: NaN
+    property real notchReach: 0.02 // how close it pulls, as a share of the line
+
+    function settle(value) {
+        if (!isNaN(notch) && Math.abs(value - notch) < notchReach * (maximum - minimum))
+            return notch;
+        return value;
+    }
 
     signal moved(real value)
 
@@ -24,7 +33,7 @@ SettingRow {
             tint: Theme.windowLit
             value: root.value - root.minimum
             maximum: root.maximum - root.minimum
-            onMoved: value => root.moved(root.minimum + value)
+            onMoved: value => root.moved(root.settle(root.minimum + value))
         }
 
         Text {

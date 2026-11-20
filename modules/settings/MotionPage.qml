@@ -25,12 +25,13 @@ ColumnLayout {
     SettingSlider {
         key: "orbitSpeed"
         label: Lang.t("Vitesse de l'orbite")
-        hint: Lang.t("La vitesse de la montée en orbite (balayage à quatre doigts vers le haut, Super + Tab).")
+        hint: Lang.t("La vitesse des allers-retours en orbite et vers les planètes (balayage à quatre doigts, Super + Tab).")
         value: Config.orbitSpeed
         minimum: 0.5
         maximum: 3
         shownAs: 100
         unit: " %"
+        notch: 1 // as it comes
         onMoved: value => Config.orbitSpeed = Math.round(value * 20) / 20
     }
 
