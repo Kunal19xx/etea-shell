@@ -24,7 +24,9 @@ It started as "I want my desktop to feel like my drawings" and kind of got out o
 ## What's inside
 
 - **A planet of pages.** Workspaces in groups (8 by default), turned like a globe, with an
-  orbit view to drag windows between them and a system view to pick your world.
+  orbit view to drag windows between them and a system view to pick your world. With the
+  optional [orbit](https://github.com/SDcold/orbit) plugin, Hyprland turns the real windows
+  itself.
 - **Worlds, not themes.** Each planet brings its own sky, ground and colours. You can even make
   one from any picture.
 - **A bar you arrange.** Islands, a band or bare sky, any module on any end, drag and drop in
@@ -167,7 +169,29 @@ would do without touching anything, and `install.sh --uninstall` takes ETEA back
    that line, kitty is left alone. Settings › Windows › Terminal can add it for you, or turn it
    all off.
 
-5. **Log out and back in**, or just run `qs -p ~/.config/etea-shell` to try it right away.
+5. **Live page turns with orbit** (optional, experimental). Out of the box, ETEA turns a page
+   with copies of your windows, drawn over Hyprland while the real ones switch behind them.
+   [orbit](https://github.com/SDcold/orbit) is a Hyprland plugin made for ETEA that turns the
+   real windows instead: nothing is drawn over them, the turn starts at once instead of waiting
+   for the copies, and see-through windows keep their blur. ETEA notices it and hands it the
+   planet's size and pace, there's nothing to set.
+
+   ```sh
+   hyprpm update
+   hyprpm add https://github.com/SDcold/orbit
+   hyprpm enable orbit
+   ```
+
+   ```lua
+   hl.on("hyprland.start", function()
+       hl.exec_cmd("hyprpm reload -n")
+   end)
+   ```
+
+   It's young and only tested on Hyprland 0.57.2. A plugin runs inside Hyprland, so if it
+   crashes your session goes with it: `hyprpm disable orbit` takes it back out.
+
+6. **Log out and back in**, or just run `qs -p ~/.config/etea-shell` to try it right away.
 
 ETEA takes over a handful of shortcuts while it runs (pages, launcher, lock…). Nothing is
 written to your Hyprland config: reload Hyprland and they're yours again, until the shell takes
