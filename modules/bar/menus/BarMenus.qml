@@ -147,7 +147,8 @@ Scope {
                         traffic: "TrafficMenu.qml",
                         bluetooth: "BluetoothMenu.qml",
                         power: "PowerMenu.qml",
-                        keyboard: "KeyboardMenu.qml"
+                        keyboard: "KeyboardMenu.qml",
+                        screens: "ScreensMenu.qml"
                     })[panel.shown] ?? ""
             }
         }
