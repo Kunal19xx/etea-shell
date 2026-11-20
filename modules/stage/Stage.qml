@@ -18,7 +18,9 @@ Variants {
         required property var modelData
 
         readonly property bool focused: Compositor.focusedOutput === modelData.name
-        readonly property bool showing: focused && Planet.phase >= Planet.Phase.Spinning
+        // With the orbit plugin turning a page, Hyprland draws the windows and the world
+        // behind turns on its own: the stage has nothing to cover
+        readonly property bool showing: focused && Planet.phase >= Planet.Phase.Spinning && !Planet.nativeTurn
         // The planet's centre is way below the screen, so everything swings around it
         readonly property real pivotY: height * (1 - Theme.terrainHeight) + Theme.terrainCurve * width / 1600
 
@@ -216,7 +218,7 @@ Variants {
 
                 anchors.fill: parent
                 // Only the focused screen ever shows its stage
-                active: stage.focused && Planet.phase !== Planet.Phase.Idle
+                active: stage.focused && Planet.phase !== Planet.Phase.Idle && !Planet.nativeTurn
 
                 sourceComponent: World {
                     angle: Planet.resting + Planet.travel - Planet.handTurn
@@ -314,7 +316,31 @@ Variants {
                     anchors.fill: parent
                     screenX: stage.modelData.x
                     screenY: stage.modelData.y
-                    active: stage.focused && Planet.phase !== Planet.Phase.Spinning && Planet.altitude === 0
+                    active: stage.focused && (Planet.phase !== Planet.Phase.Spinning || Planet.nativeTurn) && Planet.altitude === 0
+                    // Turning with the plugin, the stars ride in with the page they belong to
+                    transform: Rotation {
+                        origin.x: stage.width / 2
+                        origin.y: stage.pivotY
+                        angle: Planet.nativeTurn ? Planet.remaining * 180 / Math.PI : 0
+                    }
+                }
+
+                // And the page turning away keeps its own until it has gone
+                Loader {
+                    anchors.fill: parent
+                    active: stage.focused && Planet.nativeTurn
+
+                    sourceComponent: WindowFrames {
+                        screenX: stage.modelData.x
+                        screenY: stage.modelData.y
+                        page: Planet.origin
+                        leavingPage: true
+                        transform: Rotation {
+                            origin.x: stage.width / 2
+                            origin.y: stage.pivotY
+                            angle: -Planet.travel * 180 / Math.PI
+                        }
+                    }
                 }
 
                 WindowBirth {

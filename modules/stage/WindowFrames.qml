@@ -12,13 +12,17 @@ Item {
     required property real screenX
     required property real screenY
     property bool active: true
+    property int page: Planet.current // whose windows: the page on screen, or one turning away
+    // A page turning away has lost the focus: its stars stay on the window last lit there
+    property bool leavingPage: false
 
     property bool sliding: false // a layout change, Hyprland is animating the windows
     property bool following: false // something is moving right now, keep up with it
     property bool paging: false // Hyprland is sliding a page in, the stars wait for it
     property string lastShape: ""
 
-    readonly property var pageWindows: Hyprland.toplevels.values.filter(t => t.workspace?.id === Planet.current)
+    readonly property var pageWindows: Hyprland.toplevels.values.filter(t => t.workspace?.id === root.page)
+    readonly property var lastLit: leavingPage ? pageWindows.reduce((best, t) => (t.lastIpcObject?.focusHistoryID ?? 1e9) < (best?.lastIpcObject?.focusHistoryID ?? 1e9) ? t : best, null) : null
 
     // Quiet when nothing moves. As soon as something does, we ask every other frame.
     Timer {
@@ -85,7 +89,7 @@ Item {
 
             readonly property var info: modelData?.lastIpcObject
             readonly property bool known: info?.size !== undefined
-            readonly property bool focused: Hyprland.activeToplevel === modelData
+            readonly property bool focused: root.leavingPage ? root.lastLit === modelData : Hyprland.activeToplevel === modelData
             readonly property string shape: known ? `${info.at} ${info.size}` : ""
             readonly property bool shown: root.active && !root.paging && focused && known && info.fullscreen !== 2 && modelData.address !== Planet.birthing
 
