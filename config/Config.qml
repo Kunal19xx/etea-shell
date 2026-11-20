@@ -45,7 +45,8 @@ Singleton {
         { id: "nightlight", label: Lang.t("Veilleuse"), icon: "nightlight" },
         { id: "awake", label: Lang.t("Éveillé"), icon: "coffee" },
         { id: "microphone", label: Lang.t("Micro"), icon: "microphone" },
-        { id: "wallpaper", label: Lang.t("Fond d'écran"), icon: "image" }
+        { id: "wallpaper", label: Lang.t("Fond d'écran"), icon: "image" },
+        { id: "screens", label: Lang.t("Écrans"), icon: "screens" }
     ]
     readonly property var resourceChoices: [
         { id: "cpu", label: Lang.t("Processeur"), icon: "cpu" },
@@ -88,6 +89,8 @@ Singleton {
     property alias windowDim: saved.windowDim
     property alias traceWidth: saved.traceWidth
     property alias traceSpacing: saved.traceSpacing
+    property alias screens: saved.screens // { screen: { mode, scale, transform } }
+    property alias screenSetups: saved.screenSetups // { screens plugged together: { mirror, off, at } }
     property alias windowGapOuter: saved.windowGapOuter
     property alias windowGapInner: saved.windowGapInner
 
@@ -227,6 +230,8 @@ Singleton {
             property real windowDim: 0.28
             property int traceWidth: 2
             property int traceSpacing: 420
+            property var screens: ({})
+            property var screenSetups: ({})
             property int windowGapOuter: 12
             property int windowGapInner: 5
 
