@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs.config
 import qs.services
+import qs.modules.stage
 
 // One world per screen, all the way at the back, under the windows.
 Variants {
@@ -32,6 +33,12 @@ Variants {
             // orbit plugin the stage stays out of the way, so this world turns with the page.
             angle: Config.pageTransition === "slide" ? 0 : Planet.resting + (Planet.nativeTurn ? Planet.travel : 0)
             interactive: true
+        }
+
+        // How smoothly this world turned under the plugin's windows
+        FrameMeter {
+            name: "orbit"
+            running: Planet.nativeTurn && Compositor.focusedOutput === modelData.name
         }
 
         // The background of the focused screen, saved to a file, to check a change unseen
