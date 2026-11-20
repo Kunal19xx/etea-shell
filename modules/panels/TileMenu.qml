@@ -11,7 +11,7 @@ import qs.services
 Item {
     id: root
 
-    property string menu: "" // "network" or "bluetooth", empty once it's closing
+    property string menu: "" // "network", "bluetooth" or "screens", empty once it's closing
     property Item from: null // the tile it grows from
     property string shown: "" // stays a little longer than menu, so it can fold away
     property real reveal: 0
@@ -111,7 +111,7 @@ Item {
 
             x: 20
             y: 20
-            sourceComponent: ({ network: networkMenu, bluetooth: bluetoothMenu })[root.shown] ?? null
+            sourceComponent: ({ network: networkMenu, bluetooth: bluetoothMenu, screens: screensMenu })[root.shown] ?? null
         }
     }
 
@@ -125,5 +125,11 @@ Item {
         id: bluetoothMenu
 
         BluetoothMenu {}
+    }
+
+    Component {
+        id: screensMenu
+
+        ScreensMenu {}
     }
 }

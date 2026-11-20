@@ -5,7 +5,7 @@ import qs.config
 import qs.services
 
 // Little tools within reach: capture, clipboard, colour picker, night light, staying awake,
-// microphone, wallpaper.
+// microphone, wallpaper, screens.
 Row {
     id: root
 
@@ -63,6 +63,10 @@ Row {
                     // land and its colours. No new planet, worlds are made in Settings.
                     case "wallpaper":
                         Skies.ask({ role: "sky", title: Lang.t("Un fond d'écran"), answer: null, from: null, planetId: Theme.planet.id });
+                        break;
+                    // How the screens are shown, and each one's mode, a click away
+                    case "screens":
+                        Menus.toggle("screens", tool.mapToItem(null, tool.width / 2, 0).x);
                         break;
                     }
                 }

@@ -193,6 +193,26 @@ ColumnLayout {
             onToggled: Wake.on = !Wake.on
         }
 
+        // A click goes round the ways of showing the screens, a right click picks one, or the
+        // mode. With a single screen, a click opens that menu too.
+        QuickTile {
+            id: screensTile
+
+            icon: "screens"
+            label: Lang.t("Écrans")
+            detail: Screens.several ? Screens.projectionName(Screens.projection) : Screens.primary ? Lang.t("{0} Hz", Math.round(Screens.primary.refresh)) : ""
+            on: Screens.several && Screens.projection !== "extend"
+            tint: "#9fd3c7"
+            menu: "screens"
+            onToggled: {
+                if (Screens.several)
+                    Screens.projectNext();
+                else
+                    tileMenu.show(menu, screensTile);
+            }
+            onMenuRequested: tileMenu.show(menu, screensTile)
+        }
+
         // Two tools that do something once rather than stay on
         QuickTile {
             icon: "capture"

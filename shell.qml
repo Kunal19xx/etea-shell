@@ -13,6 +13,7 @@ import qs.modules.niri
 import qs.modules.osd
 import qs.modules.panels
 import qs.modules.polkit
+import qs.modules.screens
 import qs.modules.session
 import qs.modules.settings
 import qs.modules.stage
@@ -58,6 +59,7 @@ ShellRoot {
     Alerts {}
     Cheatsheet {}
     Osd {}
+    KeepScreens {}
     Clipboard {}
     Capture {}
     Welcome {}
