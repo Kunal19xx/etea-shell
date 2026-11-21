@@ -337,7 +337,8 @@ Item {
         readonly property real maxAmp: Math.min(root.radius * 0.024, 34) * Config.terrainRelief * (root.planet.relief ?? 1) * (1 - root.space)
         // From just above the highest it can climb, down to the bottom of the screen
         // Stars float a little higher than bars stand
-        readonly property real tallest: Config.groundMusic === "stars" ? climb * 1.3 + 40 : climb
+        // and the constellations they let go drift higher still
+        readonly property real tallest: Config.groundMusic === "stars" ? climb * 1.3 + 40 + ghostRise : climb
         readonly property real stripTop: hillsShown > 0.5 ? root.height * root.horizon - (maxAmp + tallest + 12) * root.unit : root.height - (tallest + 12) * root.unit
 
         Behavior on dance {
@@ -386,7 +387,135 @@ Item {
             loops: Animation.Infinite
         }
 
+        // What the music strikes, among the stars: a star born on the horizon, a spark sent
+        // along the constellation, and the constellation itself let go to drift into the sky.
+        // Each lives in a few slots, stamped with the clock above; a strike finding every
+        // slot still busy is let pass.
+        readonly property real ghostRise: climb * 0.9
+        readonly property real ghostLife: 2.6 // as the shader has it
+        readonly property real sparkLife: 1.1
+        property vector4d birth0: Qt.vector4d(0, -100, 0, 1)
+        property vector4d birth1: Qt.vector4d(0, -100, 0, 1)
+        property vector4d birth2: Qt.vector4d(0, -100, 0, 1)
+        property vector4d birth3: Qt.vector4d(0, -100, 0, 1)
+        property vector4d birth4: Qt.vector4d(0, -100, 0, 1)
+        property vector4d birth5: Qt.vector4d(0, -100, 0, 1)
+        property vector4d birth6: Qt.vector4d(0, -100, 0, 1)
+        property vector4d birth7: Qt.vector4d(0, -100, 0, 1)
+        property vector2d spark0: Qt.vector2d(-100, 0)
+        property vector2d spark1: Qt.vector2d(-100, 0)
+        property vector2d spark2: Qt.vector2d(-100, 0)
+        property var ghostTimes: [-100, -100, -100, -100, -100, -100, -100, -100]
+        property var ghostRows: [[], [], [], [], [], [], [], []]
+        property vector4d ghostAt0: Qt.vector4d(ghostTimes[0], ghostTimes[1], ghostTimes[2], ghostTimes[3])
+        property vector4d ghostAt1: Qt.vector4d(ghostTimes[4], ghostTimes[5], ghostTimes[6], ghostTimes[7])
+        property var ghosts: ghostRowsPicture
+        property real lastSpark: -100
+        property real lastGhost: -100
+
+        function strike(band, strength) {
+            const now = time;
+            for (let i = 0; i < 8; i++) {
+                if (now - music["birth" + i].y > music["birth" + i].w) {
+                    music["birth" + i] = Qt.vector4d(band, now, strength, 1.1 - 0.6 * band / 25);
+                    break;
+                }
+            }
+            // A strike in the lows also sends a spark and lets the constellation go
+            if (band >= 6 || strength < 0.25)
+                return;
+            if (now - lastSpark > 0.3) {
+                for (let i = 0; i < 3; i++) {
+                    if (now - music["spark" + i].x > sparkLife) {
+                        music["spark" + i] = Qt.vector2d(now, strength);
+                        lastSpark = now;
+                        break;
+                    }
+                }
+            }
+            if (now - lastGhost > 0.45)
+                letGo();
+        }
+
+        // What each band of the constellation hears right now, as the shader reckons it
+        function letGo() {
+            const now = time;
+            const slot = ghostTimes.findIndex(at => now - at > ghostLife);
+            if (slot < 0)
+                return;
+            const levels = Beat.shown;
+            const row = [];
+            for (let c = 0; c < 26; c++)
+                row.push(1 - Math.exp(-(levels[c] ?? 0) * 1.9 * (0.6 + 0.7 * c / 25)));
+            const rows = ghostRows.slice();
+            rows[slot] = row;
+            ghostRows = rows;
+            const times = ghostTimes.slice();
+            times[slot] = now;
+            ghostTimes = times;
+            lastGhost = now;
+        }
+
+        // The clock starts again from 0 each time the music shows: forget what it stamped
+        function forget() {
+            for (let i = 0; i < 8; i++)
+                music["birth" + i] = Qt.vector4d(0, -100, 0, 1);
+            for (let i = 0; i < 3; i++)
+                music["spark" + i] = Qt.vector2d(-100, 0);
+            ghostTimes = [-100, -100, -100, -100, -100, -100, -100, -100];
+            lastSpark = -100;
+            lastGhost = -100;
+        }
+
+        onVisibleChanged: forget()
+
+        Connections {
+            target: Beat
+            enabled: music.visible && music.style === 2
+
+            function onStruck(band, strength) {
+                music.strike(band, strength);
+            }
+        }
+
+        // In a quiet stretch with no strike in the lows, the constellation still lets go now and then
+        Timer {
+            interval: 1500
+            repeat: true
+            running: music.visible && music.style === 2
+            onTriggered: {
+                if (music.time - music.lastGhost > 1.4 && Math.max(0, ...Beat.shown) > 0.15)
+                    music.letGo();
+            }
+        }
+
         fragmentShader: Qt.resolvedUrl("../../shaders/music.frag.qsb")
+    }
+
+    // The constellations the music let go, one row of 26 bands each, as a tiny picture for its
+    // shader, kept just off the screen
+    Item {
+        id: ghostRowsPicture
+
+        x: -64
+        width: 26
+        height: 8
+        layer.enabled: true
+        layer.smooth: false
+
+        Repeater {
+            model: 26 * 8
+
+            Rectangle {
+                required property int index
+
+                x: index % 26
+                y: Math.floor(index / 26)
+                width: 1
+                height: 1
+                color: Qt.rgba(music.ghostRows[y]?.[x] ?? 0, 0, 0, 1)
+            }
+        }
     }
 
     ShaderEffect {
