@@ -508,16 +508,11 @@ vec4 greatStarAt(vec2 at, float px) {
     return over(inkStarAt(heart, reach * (0.07 + 0.07 * pulse.x), vec3(1.0, 0.98, 0.95), px), color);
 }
 
-float smoothNoise(float x) {
-    float i = floor(x);
-    float f = fract(x);
-    return mix(hash(i), hash(i + 1.0), f * f * (3.0 - 2.0 * f));
-}
-
-// The aurora: three curtains along the ground, the lows in the middle. Each hangs from a
-// bright line that follows the music and swells slowly, its rays cut into thin upright
-// lines that drift with the folds and climb in three flat steps of light. The farthest
-// curtain is the highest, the faintest, and a little behind the music.
+// The aurora: three ribbons along the ground, the lows in the middle, each a band of fine
+// parallel lines rippling sideways in slow waves. A ribbon thickens as its part of the music
+// grows loud and pinches where it twists, its lines gathering there. The lowest line is the
+// brightest and keeps a line of ink under it; the farthest ribbon is the highest, the
+// faintest, and a little behind the music.
 vec4 auroraAt(vec2 at, float px) {
     vec4 color = vec4(0.0);
     float h = reach;
@@ -526,33 +521,29 @@ vec4 auroraAt(vec2 at, float px) {
         float b = abs(at.x / 1600.0 - 0.5) * 2.0 * 23.0 + layer;
         float late = layer * 0.5;
         float heard = (loudAt(b - 1.0, late) + 2.0 * loudAt(b, late) + loudAt(b + 1.0, late)) * 0.25;
-        float swell = sin(at.x * (0.0035 + 0.0015 * layer) + time * (0.25 + 0.1 * layer) + layer * 2.1);
-        float base = h * (0.1 + 0.22 * layer + heard * (0.55 - 0.1 * layer) + 0.05 * swell) * (1.0 + 0.1 * pulse.x);
+        float speed = 0.25 + 0.08 * layer;
+        float wave = 0.55 * sin(at.x * (0.004 + 0.001 * layer) - time * speed + layer * 2.1)
+            + 0.3 * sin(at.x * (0.0095 - 0.0015 * layer) + time * speed * 1.6 + layer * 4.3)
+            + 0.15 * sin(at.x * 0.021 - time * speed * 2.3 + layer);
+        float base = h * (0.18 + 0.28 * layer + 0.5 * heard * (1.0 - 0.25 * layer) + 0.1 * wave) * (1.0 + 0.08 * pulse.x);
+        float twist = abs(sin(at.x * (0.0028 + 0.0008 * layer) + time * (0.18 + 0.05 * layer) + layer * 1.7));
+        float thick = h * (0.06 + 0.32 * heard) * (0.25 + 0.75 * twist) * (1.0 + 0.25 * pulse.x);
         float d = at.y - base;
-        if (d < -12.0 * px || d > h * 1.3)
+        if (d < -6.0 * px || d > thick + 3.0 * px)
             continue;
-        float strength = (1.0 - 0.33 * layer) * (0.45 + 0.55 * heard);
+        float strength = (1.0 - 0.3 * layer) * (0.5 + 0.5 * heard);
 
-        // The rays: blades that lean with the folds and thin to a point as they climb, the
-        // curtain rising and falling in slow waves along its length, each ray a little different
-        float fold = at.x * 0.006 + time * (0.3 + 0.1 * layer) + layer * 5.0;
-        float folded = at.x + 26.0 * sin(fold) + d * 0.12 * cos(fold * 0.7 + 1.3);
-        float spacing = 11.0 + 3.0 * layer;
-        float cell = floor(folded / spacing);
-        float across = (fract(folded / spacing) - 0.5) * spacing;
-        float wave = smoothNoise(folded * 0.012 + time * (0.35 + 0.1 * layer) + layer * 17.0);
-        float n = 0.8 + 0.2 * hash(cell + layer * 31.0);
-        float tall = h * (0.3 + 0.7 * heard) * (0.3 + 0.7 * wave) * n * (1.0 + 0.3 * pulse.x);
-        float rise = clamp(d / max(tall, 1.0), 0.0, 1.0);
-        float steps = floor(rise * 3.0) / 3.0;
-        float ray = stroke(across, spacing * (0.08 + 0.34 * hash(cell * 1.7 + layer)) * pow(1.0 - rise, 0.8), px) * inside(d - tall, px) * inside(-d, px);
-        vec3 tone = mix(light.rgb, ink.rgb, min(1.0, steps * 1.4));
-        color = over(vec4(tone, 1.0) * ray * (0.9 - 1.08 * steps) * strength, color);
-
-        // A flat step of light just under the line, the line itself, and its ink below
-        color = over(vec4(ink.rgb, 1.0) * 0.18 * strength * inside(d, px) * inside(-d - 10.0, px), color);
-        color = over(vec4(outline.rgb, 1.0) * stroke(d + (2.2 - 0.4 * layer) * px, (1.0 - 0.2 * layer) * px, px) * strength, color);
-        color = over(vec4(light.rgb, 1.0) * stroke(d, (1.4 - 0.3 * layer) * px, px) * strength, color);
+        // The ribbon's body in two flat steps, stronger in its lower half
+        float body = inside(-d, px) * inside(d - thick, px);
+        float lower = inside(d - thick * 0.5, px);
+        color = over(vec4(ink.rgb, 1.0) * body * mix(0.1, 0.22, lower) * strength, color);
+        color = over(vec4(outline.rgb, 1.0) * stroke(d + 2.4 * px, 1.1 * px, px) * strength, color);
+        // Its lines, the lowest the brightest
+        for (int k = 0; k < 5; k++) {
+            float f = float(k) / 4.0;
+            float line = stroke(d - thick * f, (1.2 - 0.15 * float(k)) * px, px);
+            color = over(vec4(mix(light.rgb, ink.rgb, f), 1.0) * line * (1.0 - 0.55 * f) * strength, color);
+        }
     }
     return color;
 }
