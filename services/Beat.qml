@@ -15,6 +15,9 @@ Singleton {
     property var levels: [] // exactly what cava hears
     property var shown: [] // what we actually draw: quick to rise, slow to settle
     property var replayed: [] // a recording of cava played back instead of what it hears, to test with
+    property var trail: [] // the same, slower still: what lags a little behind the music
+    property var pulse: [0, 0, 0] // the last strike in the lows, the middle and the highs, fading out
+    property real calm: 0 // how loud it is overall, over the last second or so
 
     // A note struck: where in the range it hit, 0 the lowest of the 26 bands, and how hard, 0 to 1
     signal struck(int band, real strength)
@@ -62,7 +65,11 @@ Singleton {
             if (armed[v] && rise > bar && now - lastStrike[v] > voice.gap) {
                 armed[v] = false;
                 lastStrike[v] = now;
-                struck(top, Math.min(1, (rise - usual[v]) / (usual[v] * 4 + 0.02)));
+                const strength = Math.min(1, (rise - usual[v]) / (usual[v] * 4 + 0.02));
+                const pulses = pulse.slice();
+                pulses[v] = Math.max(pulses[v], strength);
+                pulse = pulses;
+                struck(top, strength);
             } else if (!armed[v] && rise < bar * 0.6) {
                 armed[v] = true;
             }
@@ -81,16 +88,24 @@ Singleton {
         onTriggered: {
             const count = Math.max(root.levels.length, root.shown.length);
             const steps = Math.min(frameTime, 0.1) / 0.025;
-            const next = [];
-            let highest = 0;
+            const next = [], late = [];
+            let highest = 0, sum = 0;
             for (let i = 0; i < count; i++) {
                 const target = Math.min(1, (root.levels[i] ?? 0) * Config.musicGain), now = root.shown[i] ?? 0;
                 const speed = target > now ? Config.musicRise : root.wanted ? Config.musicFall : Theme.groundSettle;
                 const value = now + (target - now) * (1 - Math.pow(1 - speed, steps));
                 next.push(value);
                 highest = Math.max(highest, value);
+                sum += value;
+                const behind = root.trail[i] ?? 0;
+                late.push(behind + (value - behind) * (1 - Math.pow(1 - (value > behind ? 0.1 : 0.04), steps)));
             }
-            root.shown = !root.wanted && highest < 0.004 ? [] : next;
+            const seconds = Math.min(frameTime, 0.1);
+            root.calm += ((count ? sum / count : 0) - root.calm) * (1 - Math.exp(-seconds / 1.4));
+            root.pulse = root.pulse.map(value => value * Math.exp(-seconds / 0.28));
+            const resting = !root.wanted && highest < 0.004;
+            root.shown = resting ? [] : next;
+            root.trail = resting ? [] : late;
         }
     }
 
