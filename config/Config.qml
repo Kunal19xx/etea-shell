@@ -79,7 +79,7 @@ Singleton {
     property alias widgetStyle: saved.widgetStyle // "sky" or "celestial"
     property alias widgetsFrozen: saved.widgetsFrozen // nothing moves or resizes them
     property alias decorations: saved.decorations
-    property alias groundMusic: saved.groundMusic // "lines", "bars" or "off"
+    property alias groundMusic: saved.groundMusic // "lines", "bars", "stars", "astrolabe", "greatstar", "aurora" or "off"
     property alias groundLift: saved.groundLift
     property alias terrainHeight: saved.terrainHeight
     property alias terrainRelief: saved.terrainRelief

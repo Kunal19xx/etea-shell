@@ -60,12 +60,13 @@ Item {
     readonly property real unit: width / 1600
     readonly property point center: Qt.point(width / 2, height * horizon + radius * unit)
 
-    // Four sound levels at a time, the way the shader wants them. Only read while the ground
-    // dances: otherwise every level another listener hears would redraw the music strip.
-    function bands(first) {
+    // Four sound levels at a time, the way the shader wants them, or the slower copy's. Only
+    // read while the ground dances: otherwise every level another listener hears would redraw
+    // the music strip.
+    function bands(first, late) {
         if (!(music.dance > 0))
             return Qt.vector4d(0, 0, 0, 0);
-        const levels = Beat.shown;
+        const levels = late ? Beat.trail : Beat.shown;
         return Qt.vector4d(levels[first] ?? 0, levels[first + 1] ?? 0, levels[first + 2] ?? 0, levels[first + 3] ?? 0);
     }
 
@@ -338,7 +339,7 @@ Item {
         // From just above the highest it can climb, down to the bottom of the screen
         // Stars float a little higher than bars stand
         // and the constellations they let go drift higher still
-        readonly property real tallest: Config.groundMusic === "stars" ? climb * 1.3 + 40 + ghostRise : climb
+        readonly property real tallest: ({ stars: climb * 1.3 + 40 + ghostRise, astrolabe: climb * 2 + 6, greatstar: climb * 2.6, aurora: climb * 2.1 })[Config.groundMusic] ?? climb
         readonly property real stripTop: hillsShown > 0.5 ? root.height * root.horizon - (maxAmp + tallest + 12) * root.unit : root.height - (tallest + 12) * root.unit
 
         Behavior on dance {
@@ -359,6 +360,16 @@ Item {
         property vector4d l4: root.bands(16)
         property vector4d l5: root.bands(20)
         property vector4d l6: root.bands(24)
+        // The same, slower, for what lags behind; the ink around the shapes; the strikes
+        property vector4d t0: root.bands(0, true)
+        property vector4d t1: root.bands(4, true)
+        property vector4d t2: root.bands(8, true)
+        property vector4d t3: root.bands(12, true)
+        property vector4d t4: root.bands(16, true)
+        property vector4d t5: root.bands(20, true)
+        property vector4d t6: root.bands(24, true)
+        property color outline: Qt.darker(root.tintA.skyTop, 1.8)
+        property vector4d pulse: dance > 0 ? Qt.vector4d(Beat.pulse[0], Beat.pulse[1], Beat.pulse[2], Beat.calm) : Qt.vector4d(0, 0, 0, 0)
         property color ink: ({ accent: Desk.accent, ink: Desk.ink, world: root.planet.light })[Config.musicColor] ?? root.tintA.skyLow
         property color light: ({ accent: Desk.accentLight, ink: Desk.ink })[Config.musicColor] ?? "#fff8eb"
         property vector2d world: Qt.vector2d(root.width, root.height)
@@ -373,7 +384,7 @@ Item {
         property real farA: Morph.formOf(root.formA, "far")
         property real rough: root.planet.rough ?? 1
         property real hills: hillsShown
-        property real style: ({ lines: 0, bars: 1, stars: 2 })[Config.groundMusic] ?? 0
+        property real style: ({ lines: 0, bars: 1, stars: 2, astrolabe: 3, greatstar: 4, aurora: 5 })[Config.groundMusic] ?? 0
         property real reach: climb
         property real density: Config.musicDensity
         // Its own clock, only running while it shows, for the stars to breathe and sparkle

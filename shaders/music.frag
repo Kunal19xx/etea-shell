@@ -48,6 +48,16 @@ layout(std140, binding = 0) uniform buf {
     vec4 ghostAt0; // when each of the eight was let go
     vec4 ghostAt1;
     float ghostRise; // how high they drift, in units
+    // The same 26 bands, slower: what lags a little behind the music
+    vec4 t0;
+    vec4 t1;
+    vec4 t2;
+    vec4 t3;
+    vec4 t4;
+    vec4 t5;
+    vec4 t6;
+    vec4 outline; // the dark ink around every shape, so it reads on any picture
+    vec4 pulse; // the last strike in the lows, the middle and the highs, and how loud it is overall
 };
 
 // What each let-go constellation heard, a row of 26 bands each
@@ -337,9 +347,219 @@ vec4 ghostsAt(vec2 at, float wide, float lift, float px) {
     return color;
 }
 
+// What the slower copy hears, one band
+float trailBand(int i) {
+    vec4 rows[7] = vec4[](t0, t1, t2, t3, t4, t5, t6);
+    i = clamp(i, 0, 25);
+    return rows[i / 4][i % 4];
+}
+
+// How loud the range is at b, 0 the lowest band and 25 the highest, between two bands; late
+// goes from what's heard now, 0, to the slower copy, 1. Lifted so quiet music still moves.
+float loudAt(float b, float late) {
+    b = clamp(b, 0.0, 25.0);
+    int i = int(floor(b));
+    float f = fract(b);
+    f = f * f * (3.0 - 2.0 * f); // smooth across each band, so outlines never kink
+    float now = mix(band(i), band(i + 1), f);
+    float behind = mix(trailBand(i), trailBand(i + 1), f);
+    return 1.0 - exp(-mix(now, behind, late) * 1.9);
+}
+
+// Covered where a signed distance is below 0, over one pixel
+float inside(float d, float px) {
+    return clamp(0.5 - d / px, 0.0, 1.0);
+}
+
+// Covered within half a width of a line
+float stroke(float d, float half_, float px) {
+    return clamp((half_ - abs(d)) / px + 0.5, 0.0, 1.0);
+}
+
+// ETEA's star, filled, with its ring of ink
+vec4 inkStarAt(vec2 q, float size, vec3 fill, float px) {
+    float d = starEdge(abs(q), size);
+    vec4 ring = vec4(outline.rgb, 1.0) * inside(d - max(1.5 * px, size * 0.14), px);
+    return over(vec4(fill, 1.0) * inside(d, px), ring);
+}
+
+// The astrolabe: a half dial of ink set on the ground in the middle, its graduated rim
+// turning slowly. Seven orbits, the lows inside, each swept from the left as far as it's
+// loud, a star riding its end; a strike thickens the orbits it belongs to.
+vec4 astrolabeAt(vec2 at, float px) {
+    float k = reach * 2.0 / 380.0; // drawn on a dial 380 wide, then sized to how high the music climbs
+    vec2 q = vec2(at.x - 800.0, at.y);
+    float r = length(q);
+    float plate = 380.0 * k;
+    if (r > plate + 2.0 * px || at.y < -2.0 * px)
+        return vec4(0.0);
+    float angle = atan(max(q.y, 0.0), q.x); // 0 on the right, pi on the left
+    float above = inside(-at.y, px);
+    vec3 shade = mix(ink.rgb, outline.rgb, 0.42);
+    vec4 color = vec4(outline.rgb, 1.0) * 0.78 * inside(r - plate, px) * above;
+
+    // The rim and its graduations, every 3 degrees, longer every 15 and 30
+    color = over(vec4(shade, 1.0) * stroke(r - (plate - 4.0 * k), max(0.75 * px, 1.5 * k), px), color);
+    float cellSize = 6.2831853 / 120.0;
+    float c = (angle + time * 0.03) / cellSize;
+    float tick = mod(floor(c + 0.5), 120.0);
+    float long_ = (mod(tick, 10.0) < 0.5 ? 22.0 : mod(tick, 5.0) < 0.5 ? 14.0 : 8.0) * k;
+    float across = (c - floor(c + 0.5)) * cellSize * r;
+    float outer = plate - 10.0 * k;
+    float mark = stroke(across, max(0.6 * px, (mod(tick, 10.0) < 0.5 ? 1.5 : 1.0) * k), px) * inside(r - outer, px) * inside(outer - long_ - r, px);
+    color = over(vec4(mod(tick, 10.0) < 0.5 ? light.rgb : shade, 1.0) * mark * above, color);
+
+    // The orbits: lows inside
+    float from[7] = float[](0.0, 2.0, 5.0, 8.0, 12.0, 16.0, 21.0);
+    float to[7] = float[](2.0, 5.0, 8.0, 12.0, 16.0, 21.0, 26.0);
+    for (int o = 0; o < 7; o++) {
+        float ro = (92.0 + 36.0 * float(o)) * k;
+        if (abs(r - ro) > 40.0 * k)
+            continue;
+        float heard = 0.0;
+        for (int b = int(from[o]); b < int(to[o]); b++)
+            heard += band(b);
+        heard = 1.0 - exp(-heard / (to[o] - from[o]) * 1.9);
+        float swell = from[o] < 6.0 ? pulse.x : from[o] < 15.0 ? pulse.y : pulse.z;
+        color = over(vec4(shade, 1.0) * 0.7 * stroke(r - ro, max(0.5 * px, k), px) * above, color);
+        float end = 3.14159265 * clamp(0.02 + heard * 1.05, 0.0, 1.0); // how far from the left
+        vec2 tip = ro * vec2(cos(3.14159265 - end), sin(3.14159265 - end));
+        float d = 3.14159265 - angle <= end ? abs(r - ro) : distance(q, tip);
+        float w = (15.0 - float(o) + 10.0 * swell) * k * 0.5;
+        color = over(vec4(outline.rgb, 1.0) * stroke(d, w + 3.5 * k, px), color);
+        color = over(vec4(mix(ink.rgb, light.rgb, float(o) / 6.0), 1.0) * stroke(d, w, px), color);
+        color = over(inkStarAt(q - tip, (9.0 + 12.0 * heard + 6.0 * swell) * k, vec3(1.0, 0.98, 0.95), px), color);
+    }
+
+    // The hub, and the star on it that the lows light
+    vec4 hub = vec4(outline.rgb, 1.0) * inside(r - (58.0 + 3.5) * k, px);
+    hub = over(vec4(ink.rgb, 1.0) * inside(r - 58.0 * k, px), hub);
+    color = over(hub * above, color);
+    return over(inkStarAt(q - vec2(0.0, 22.0 * k), (16.0 + 14.0 * pulse.x) * k, vec3(1.0, 0.98, 0.95), px), color);
+}
+
+// How loud around band c, three bands averaged
+float loudAround(float c, float late) {
+    return (loudAt(c - 1.0, late) + loudAt(c, late) + loudAt(c + 1.0, late)) / 3.0;
+}
+
+// How far a great star of radius r reaches toward angle phi. Each half branch is shaped by
+// three sounds, a high at its tip, a middle note along it and a low at the heart, blended
+// smoothly so the outline swells like a drawn one; every branch hears its own. Late is how
+// far behind the music it is.
+float greatStarReach(float phi, float r, float late) {
+    float heart[4] = float[](1.0, 4.0, 2.0, 6.0);
+    float tips[4] = float[](24.0, 19.0, 22.0, 17.0);
+    float middles[8] = float[](10.0, 14.0, 12.0, 16.0, 9.0, 13.0, 11.0, 15.0);
+    float turn = phi / 1.5707963;
+    int quarter = int(floor(turn)) % 4;
+    float u = fract(turn);
+    bool first = u < 0.5;
+    float t = first ? u * 2.0 : (1.0 - u) * 2.0; // 0 at the tip, 1 at the heart
+    float s = t * t * (3.0 - 2.0 * t);
+    float tip = loudAround(tips[first ? quarter : (quarter + 1) % 4], late);
+    float middle = loudAround(middles[quarter * 2 + (first ? 0 : 1)], late);
+    float low = loudAround(heart[quarter], late);
+    float heard = mix(mix(tip, middle, s), mix(middle, low, s), s);
+    float c = sqrt(abs(cos(phi))) + sqrt(abs(sin(phi)));
+    return r / (c * c) * (1.0 + heard * (0.25 + 0.75 * s * s));
+}
+
+// How far a point at angle phi and distance far lies outside that outline, near enough in
+// units: the gap along the radius, over the outline's slope there
+float greatStarDistance(float phi, float far, float r, float late, float grow) {
+    float reachHere = greatStarReach(phi, r, late) * grow;
+    float slope = (greatStarReach(phi + 0.004, r, late) - greatStarReach(phi - 0.004, r, late)) * grow / 0.008;
+    return (far - reachHere) / sqrt(1.0 + slope * slope / max(far * far, 1.0));
+}
+
+// The great star: one star of ETEA's shape standing on the ground, its branches shaped by
+// the spectrum, cut like a stone, two contours following a little behind in time
+vec4 greatStarAt(vec2 at, float px) {
+    float r = reach * (0.75 + 0.35 * pulse.w + 0.08 * pulse.x);
+    float sway = sin(time * 0.4) * 0.03;
+    vec2 q = at - vec2(800.0, reach);
+    q = vec2(q.x * cos(sway) + q.y * sin(sway), -q.x * sin(sway) + q.y * cos(sway));
+    q.y /= 1.18; // its upright branches a little longer
+    float phi = atan(q.y, q.x);
+    phi = phi < 0.0 ? phi + 6.2831853 : phi;
+    float far = length(q);
+
+    // The shapes as distances in pixels: how far out, over how steeply the outline turns there
+    float d2 = greatStarDistance(phi, far, r, 1.0, 1.2) / px;
+    float d1 = greatStarDistance(phi, far, r, 0.5, 1.09) / px;
+    float d0 = greatStarDistance(phi, far, r, 0.0, 1.0) / px;
+    float line = 2.5;
+
+    vec3 deep = mix(ink.rgb, outline.rgb, 0.72);
+    vec3 shade = mix(ink.rgb, outline.rgb, 0.42);
+    vec4 color = vec4(outline.rgb, 1.0) * clamp(line - d2 + 0.5, 0.0, 1.0);
+    color = over(vec4(deep, 1.0) * clamp(-d2 + 0.5, 0.0, 1.0), color);
+    color = over(vec4(outline.rgb, 1.0) * clamp(line - d1 + 0.5, 0.0, 1.0), color);
+    color = over(vec4(shade, 1.0) * clamp(-d1 + 0.5, 0.0, 1.0), color);
+    color = over(vec4(outline.rgb, 1.0) * clamp(line + 1.0 - d0 + 0.5, 0.0, 1.0), color);
+    // Lit, and one side of each branch in the music's colour
+    float u = fract(phi / 1.5707963);
+    float side = clamp((u - 0.5) * 1.5707963 * far / px + 0.5, 0.0, 1.0);
+    vec3 face = mix(light.rgb, ink.rgb, side);
+    color = over(vec4(face, 1.0) * clamp(-d0 + 0.5, 0.0, 1.0), color);
+    color = over(vec4(outline.rgb, 1.0) * clamp(0.75 - abs(d0) + 0.5, 0.0, 1.0), color);
+    vec2 heart = at - vec2(800.0, reach);
+    return over(inkStarAt(heart, reach * (0.07 + 0.07 * pulse.x), vec3(1.0, 0.98, 0.95), px), color);
+}
+
+float smoothNoise(float x) {
+    float i = floor(x);
+    float f = fract(x);
+    return mix(hash(i), hash(i + 1.0), f * f * (3.0 - 2.0 * f));
+}
+
+// The aurora: three curtains along the ground, the lows in the middle. Each hangs from a
+// bright line that follows the music and swells slowly, its rays cut into thin upright
+// lines that drift with the folds and climb in three flat steps of light. The farthest
+// curtain is the highest, the faintest, and a little behind the music.
+vec4 auroraAt(vec2 at, float px) {
+    vec4 color = vec4(0.0);
+    float h = reach;
+    for (int l = 2; l >= 0; l--) {
+        float layer = float(l);
+        float b = abs(at.x / 1600.0 - 0.5) * 2.0 * 23.0 + layer;
+        float late = layer * 0.5;
+        float heard = (loudAt(b - 1.0, late) + 2.0 * loudAt(b, late) + loudAt(b + 1.0, late)) * 0.25;
+        float swell = sin(at.x * (0.0035 + 0.0015 * layer) + time * (0.25 + 0.1 * layer) + layer * 2.1);
+        float base = h * (0.1 + 0.22 * layer + heard * (0.55 - 0.1 * layer) + 0.05 * swell) * (1.0 + 0.1 * pulse.x);
+        float d = at.y - base;
+        if (d < -12.0 * px || d > h * 1.3)
+            continue;
+        float strength = (1.0 - 0.33 * layer) * (0.45 + 0.55 * heard);
+
+        // The rays: blades that lean with the folds and thin to a point as they climb, the
+        // curtain rising and falling in slow waves along its length, each ray a little different
+        float fold = at.x * 0.006 + time * (0.3 + 0.1 * layer) + layer * 5.0;
+        float folded = at.x + 26.0 * sin(fold) + d * 0.12 * cos(fold * 0.7 + 1.3);
+        float spacing = 11.0 + 3.0 * layer;
+        float cell = floor(folded / spacing);
+        float across = (fract(folded / spacing) - 0.5) * spacing;
+        float wave = smoothNoise(folded * 0.012 + time * (0.35 + 0.1 * layer) + layer * 17.0);
+        float n = 0.8 + 0.2 * hash(cell + layer * 31.0);
+        float tall = h * (0.3 + 0.7 * heard) * (0.3 + 0.7 * wave) * n * (1.0 + 0.3 * pulse.x);
+        float rise = clamp(d / max(tall, 1.0), 0.0, 1.0);
+        float steps = floor(rise * 3.0) / 3.0;
+        float ray = stroke(across, spacing * (0.08 + 0.34 * hash(cell * 1.7 + layer)) * pow(1.0 - rise, 0.8), px) * inside(d - tall, px) * inside(-d, px);
+        vec3 tone = mix(light.rgb, ink.rgb, min(1.0, steps * 1.4));
+        color = over(vec4(tone, 1.0) * ray * (0.9 - 1.08 * steps) * strength, color);
+
+        // A flat step of light just under the line, the line itself, and its ink below
+        color = over(vec4(ink.rgb, 1.0) * 0.18 * strength * inside(d, px) * inside(-d - 10.0, px), color);
+        color = over(vec4(outline.rgb, 1.0) * stroke(d + (2.2 - 0.4 * layer) * px, (1.0 - 0.2 * layer) * px, px) * strength, color);
+        color = over(vec4(light.rgb, 1.0) * stroke(d, (1.4 - 0.3 * layer) * px, px) * strength, color);
+    }
+    return color;
+}
+
 // The music on the ground, drawn only in the strip it can reach: lines echoing the
-// ridge like a seismograph, bars, or columns of stars joined top to top. Flat, each edge
-// antialiased over one pixel.
+// ridge like a seismograph, bars, columns of stars joined top to top, an astrolabe, a great
+// star or an aurora. Flat, each edge antialiased over one pixel.
 void main() {
     float k = world.x / 1600.0;
     vec2 p = (origin + qt_TexCoord0 * size) / k; // in units of the whole world
@@ -378,13 +598,19 @@ void main() {
         float shape = clamp((half_ - length(vec2(offset, above))) / px + 0.5, 0.0, 1.0);
         float rise = clamp(up / reach, 0.0, 1.0);
         color = vec4(mix(ink.rgb, light.rgb, rise * 0.75), 1.0) * shape * (0.55 + 0.4 * rise);
-    } else {
+    } else if (style < 2.5) {
         float wide = 1600.0 / 26.0;
         float lift = reach * 1.3;
         vec2 at = vec2(p.x, up);
         color = ghostsAt(at, wide, lift, px);
         color = over(birthsAt(at, wide, px), color);
         color = over(constellationAt(at, wide, lift, px), color);
+    } else if (style < 3.5) {
+        color = astrolabeAt(vec2(p.x, up), px);
+    } else if (style < 4.5) {
+        color = greatStarAt(vec2(p.x, up), px);
+    } else {
+        color = auroraAt(vec2(p.x, up), px);
     }
     fragColor = color * qt_Opacity;
 }
