@@ -87,6 +87,7 @@ Singleton {
     readonly property color windowRestShadow: "#000000"
     readonly property real windowRestShadowAlpha: 0.2
     readonly property real windowDim: Config.windowDim
+    readonly property real windowBlurNoise: 0.03 // Hyprland's default is 0.0117; just enough to hide gradient bands behind glass
     readonly property real windowFocusSpeed: 6 // Hyprland's unit, 1 is a tenth of a second
 
     // Hyprland draws the rounded frame, so it never lags behind the window
