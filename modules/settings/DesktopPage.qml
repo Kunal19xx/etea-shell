@@ -22,11 +22,11 @@ ColumnLayout {
         words: ["visualiseur", "visualizer", "cava", "spectre", "musique", "music", "égaliseur"]
     }
 
-    SettingChoice {
+    SettingSelect {
         key: "groundMusic"
         label: Lang.t("Style")
         hint: Lang.t("Visible sur les pages vides, pendant qu'un lecteur joue.")
-        options: [{ id: "lines", label: Lang.t("Lignes") }, { id: "bars", label: Lang.t("Barres") }, { id: "stars", label: Lang.t("Étoiles") }, { id: "off", label: Lang.t("Rien") }]
+        options: [{ id: "lines", label: Lang.t("Lignes") }, { id: "bars", label: Lang.t("Barres") }, { id: "stars", label: Lang.t("Étoiles") }, { id: "astrolabe", label: Lang.t("Astrolabe") }, { id: "greatstar", label: Lang.t("Grande étoile") }, { id: "aurora", label: Lang.t("Aurore") }, { id: "off", label: Lang.t("Rien") }]
         current: Config.groundMusic
         onPicked: id => Config.groundMusic = id
     }
@@ -47,7 +47,7 @@ ColumnLayout {
 
         SettingSlider {
             key: "musicDensity"
-            visible: Config.groundMusic !== "lines"
+            visible: ["bars", "stars"].includes(Config.groundMusic)
             label: Lang.t("Densité")
             hint: Lang.t("Combien de colonnes en travers de l'écran.")
             value: Config.musicDensity

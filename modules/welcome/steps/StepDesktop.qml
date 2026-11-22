@@ -23,9 +23,9 @@ ColumnLayout {
         onMoved: value => Config.terrainRelief = value
     }
 
-    SettingChoice {
+    SettingSelect {
         label: Lang.t("Musique sur le terrain")
-        options: [{ id: "lines", label: Lang.t("Lignes") }, { id: "bars", label: Lang.t("Barres") }, { id: "off", label: Lang.t("Rien") }]
+        options: [{ id: "lines", label: Lang.t("Lignes") }, { id: "bars", label: Lang.t("Barres") }, { id: "stars", label: Lang.t("Étoiles") }, { id: "astrolabe", label: Lang.t("Astrolabe") }, { id: "greatstar", label: Lang.t("Grande étoile") }, { id: "aurora", label: Lang.t("Aurore") }, { id: "off", label: Lang.t("Rien") }]
         current: Config.groundMusic
         onPicked: id => Config.groundMusic = id
     }
