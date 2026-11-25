@@ -68,7 +68,7 @@ Scope {
                 dim_inactive = true,
                 dim_strength = ${Theme.windowDim},
                 -- Blur averages the sky's grain away and its gradient bands show through glass windows: a little noise dithers them again
-                blur = { noise = ${Theme.windowBlurNoise} },
+                blur = { noise = ${Theme.windowBlurNoise * Config.grain} },
                 shadow = {
                     enabled = true,
                     range = ${Theme.windowGlowSize},
