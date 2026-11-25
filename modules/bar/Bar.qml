@@ -67,15 +67,14 @@ Variants {
             right: true
         }
 
-        // Clicks fall through the gaps and reach the desktop. Hiding, the bar listens along its edge,
-        // and once it's back only its islands (and corners) catch the mouse, never the whole strip.
+        // Clicks fall through the gaps and reach the desktop. Hiding, the bar only listens along its edge.
         mask: Region {
             Region { item: bar.hides ? zone : null }
-            Region { item: bar.shown ? left : null }
-            Region { item: bar.shown ? center : null }
-            Region { item: bar.shown ? right : null }
-            Region { item: bar.shown ? bar.leftCorner : null }
-            Region { item: bar.shown ? bar.rightCorner : null }
+            Region { item: bar.hides ? null : left }
+            Region { item: bar.hides ? null : center }
+            Region { item: bar.hides ? null : right }
+            Region { item: bar.hides ? null : bar.leftCorner }
+            Region { item: bar.hides ? null : bar.rightCorner }
         }
 
         HoverHandler {
@@ -106,13 +105,13 @@ Variants {
             }
         }
 
-        // Where the mouse finds the bar while it's away: a thin line on the screen edge
+        // Where the mouse finds the bar while it's away: a thin line on the screen edge, then the whole strip once it's back
         Item {
             id: zone
 
             y: Theme.barOnTop ? 0 : bar.implicitHeight - height
             width: bar.width
-            height: 2
+            height: bar.shown ? Theme.barReserve : 2
         }
 
         Item {
